@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/reg.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/Media/Photo/asd.png">
+    <title>Регистрация - Best Game News</title>
+</head>
+
+<body>
+    <header>
+        <div class="header">
+            <div class="logo-wrap">
+                <a class="logo-link" href="index.html">
+                    <img src="assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
+                </a>
+                <div class="logo">Best Game News</div>
+            </div>
+            <nav class="nav">
+                <a href="index.html">Главная</a>
+                <a href="login.html">Вход</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="main-container">
+            <div class="auth-container">
+                <h2>Регистрация</h2>
+                <form class="auth-form" id="registerForm" action="/assets/app/reg.php" method="post">
+                    <div class="form-group">
+                        <label for="reg-username">Логин</label>
+                        <input type="text" id="reg-username" name="login" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Пароль</label>
+                        <input type="password" id="reg-password" name="password" require minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Имя</label>
+                        <input type="text" id="reg-password" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Email</label>
+                        <input type="email" id="reg-password" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Телефон</label>
+                        <input type="tel" id="reg-email" name="phone" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Зарегистрироваться</button>
+                </form>
+                <p class="auth-link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
+                <p>Best Game News</p>
+            </div>
+            <div class="social-links">
+                <a href="#" aria-label="ВКонтакте">
+                    <button type="button"><img src="assets/Media/Photo/vk.png" alt="ВКонтакте"></button>
+                </a>
+                <a href="#" aria-label="Discord">
+                    <button type="button"><img src="assets/Media/Photo/discord.png" alt="Discord"></button>
+                </a>
+                <a href="#" aria-label="YouTube">
+                    <button type="button"><img src="assets/Media/Photo/youtube.png" alt="YouTube"></button>
+                </a>
+                <a href="#" aria-label="Telegram">
+                    <button type="button"><img src="assets/Media/Photo/tellegram.png" alt="Telegram"></button>
+                </a>
+                <a href="#" aria-label="Steam">
+                    <button type="button"><img src="assets/Media/Photo/steam.png" alt="Steam"></button>
+                </a>
+                <a href="#" aria-label="Twitch">
+                    <button type="button"><img src="assets/Media/Photo/twitch.png" alt="Twitch"></button>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
