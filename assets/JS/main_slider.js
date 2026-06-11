@@ -147,3 +147,92 @@ document.addEventListener('DOMContentLoaded', function() {
         autoSlideInterval = setInterval(goToNextSlide, 5000);
     });
 });
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Находим элементы (используем ваш класс .marquee-content)
+    const track = document.querySelector('.marquee-content');
+    const upBtn = document.querySelector('.up-btn');
+    const downBtn = document.querySelector('.down-btn');
+    
+    // Получаем все оригинальные элементы внутри трека
+    const originalItems = Array.from(track.children);
+    
+    // 2. ТРЮК БЕСКОНЕЧНОСТИ: Клонируем элементы и добавляем их в конец
+    originalItems.forEach(item => {
+        const clone = item.cloneNode(true);
+        track.appendChild(clone);
+    });
+
+    // 3. Переменные состояния
+    let posY = 0;
+    const speed = 0.5; // Скорость автопрокрутки (пикселей за кадр)
+    let isPaused = false;
+    let animationId;
+
+    // Вычисляем высоту одного полного набора элементов
+    const singleSetHeight = track.scrollHeight / 2;
+
+    // 4. Функция анимации
+    function animate() {
+        if (!isPaused) {
+            posY -= speed;
+            
+            if (Math.abs(posY) >= singleSetHeight) {
+                posY = 0;
+            }
+            
+            track.style.transform = `translateY(${posY}px)`;
+        }
+        animationId = requestAnimationFrame(animate);
+    }
+
+    // 5. Запускаем анимацию
+    animate();
+
+    // 6. Логика кнопок
+    const step = 50; // На сколько пикселей сдвигать при клике
+
+    function moveUp() {
+        isPaused = true;
+        track.style.transition = 'transform 0.3s ease';
+        
+        posY += step;
+        
+        if (posY > 0) {
+            posY = -singleSetHeight + step;
+        }
+        
+        track.style.transform = `translateY(${posY}px)`;
+        
+        setTimeout(() => {
+            track.style.transition = 'none';
+            isPaused = false;
+        }, 300);
+    }
+
+    function moveDown() {
+        isPaused = true;
+        track.style.transition = 'transform 0.3s ease';
+        
+        posY -= step;
+        
+        track.style.transform = `translateY(${posY}px)`;
+        
+        setTimeout(() => {
+            track.style.transition = 'none';
+            isPaused = false;
+        }, 300);
+    }
+
+    // Назначаем обработчики событий
+    upBtn.addEventListener('click', moveUp);
+    downBtn.addEventListener('click', moveDown);
+
+    // 7. Остановка при наведении мыши
+    const marqueeContainer = document.querySelector('.game-marquee');
+    marqueeContainer.addEventListener('mouseenter', () => {
+        isPaused = true;
+    });
+    marqueeContainer.addEventListener('mouseleave', () => {
+        isPaused = false;
+    });
+});
