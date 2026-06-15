@@ -1,3 +1,27 @@
+<?php
+session_start();
+require_once('assets/app/db.php');
+
+// В будущем здесь будет проверка $_SESSION['user_id']
+// Пока для теста захардкодим ID = 1
+if (!isset($_SESSION['user_id'])) {
+    $user_id = 1;
+} else {
+    $user_id = $_SESSION['user_id'];
+}
+
+// Получаем данные пользователя из базы
+$sql = "SELECT * FROM users WHERE id = ?";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$user = mysqli_fetch_assoc($result);
+
+if (!$user) {
+    die("Пользователь не найден!");
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,13 +30,14 @@
     <title>Личный кабинет - Best Game News</title>
     <link rel="stylesheet" href="css/cab.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    </head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
 <body>
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.html">
-                    <img src="/assets/Media/Photo//Logo.png" alt="Логотип Best Game News">
+                <a class="logo-link" href="index.php">
+                    <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
@@ -37,7 +62,7 @@
                             <img src="/assets/Media/Photo/comm.png" alt="Комментарии">
                         </button>
                     </a>
-                    <a href="reg.html">
+                    <a href="cab.php">
                         <button class="icon-btn" type="button" aria-label="Профиль">
                             <img src="/assets/Media/Photo/man.png" alt="Профиль">
                         </button>
@@ -89,25 +114,36 @@
 
                 <div class="profile-header">
                     <div class="avatar">
-                        <i class="fas fa-user"></i>
+                        <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
+                            <i class="fas fa-user"></i>
+                        <?php else: ?>
+                            <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- ФОРМА ЗАГРУЗКИ АВАТАРА -->
+                    <form action="assets/app/upload_avatar.php" method="POST" enctype="multipart/form-data" style="margin-top: 10px;">
+                        <input type="file" name="avatar" accept="image/*" required style="color: white; margin-bottom: 5px;">
+                        <button type="submit" class="save-btn" style="padding: 5px 10px; font-size: 14px;">Загрузить аватар</button>
+                    </form>
+                    
                     <div class="profile-info">
-                        <h2>ManiPowe?</h2>
-                        <p><i class="fas fa-envelope"></i>dmitri_guba@bk.ru</p>
-                        <p><i class="fas fa-map-marker-alt"></i>Камышин, Россия</p>
-                        <p><i class="fas fa-calendar"></i> Участник с 20.20.2020</p>
+                        <h2><?= htmlspecialchars($user['login']) ?></h2>
+                        <p><i class="fas fa-envelope"></i><?= htmlspecialchars($user['email']) ?></p>
+                        <p><i class="fas fa-phone"></i><?= htmlspecialchars($user['phone']) ?></p>
+                        <p><i class="fas fa-calendar"></i> Участник с <?= date('d.m.Y', strtotime($user['created_at'])) ?></p>
                         
                         <div class="profile-stats">
                             <div class="stat-item">
-                                <div class="stat-value">42</div>
+                                <div class="stat-value"><?= $user['posts_count'] ?? 0 ?></div>
                                 <div class="stat-label">Постов</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value">128</div>
+                                <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
                                 <div class="stat-label">Комментариев</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value">24</div>
+                                <div class="stat-value"><?= $user['top_liked_comment'] ?? 0 ?></div>
                                 <div class="stat-label">Лайков</div>
                             </div>
                         </div>
@@ -117,31 +153,19 @@
                 <div class="profile-form">
                     <div class="form-group">
                         <label for="username">Имя пользователя</label>
-                        <input type="text" id="username" value="ManiPowe?">
+                        <input type="text" id="username" value="<?= htmlspecialchars($user['login']) ?>">
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" value="dmitri_guba@bk.ru">
+                        <input type="email" id="email" value="<?= htmlspecialchars($user['email']) ?>">
                     </div>
                     <div class="form-group">
-                        <label for="location">Местоположение</label>
-                        <input type="text" id="location" value="Камышин, Россия">
+                        <label for="phone">Телефон</label>
+                        <input type="tel" id="phone" value="<?= htmlspecialchars($user['phone']) ?>">
                     </div>
                     <div class="form-group">
                         <label for="bio">О себе</label>
                         <textarea id="bio" rows="3">Узник 2к птс, ищу бустеров</textarea>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="interests">Интересы</label>
-                        <select id="interests" multiple>
-                            <option>DOTA 2</option>
-                            <option>Counter-Strike 2</option>
-                            <option>Valorant</option>
-                            <option>Apex Legends</option>
-                            <option>Fortnite</option>
-                            <option>Call of Duty</option>
-                            <option>League of Legends</option>
-                        </select>
                     </div>
                 </div>
 
@@ -153,7 +177,10 @@
     <footer>
         <div class="footer">
             <div class="footer-logo">
-                <img src="/assets/Media/Photo//Logo.png" alt="Логотип Best Game News">
+                <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
+                <p>Best Game News</p>
+            </div>
+            <div class="prav">
                 <p>2026 © Все права защищенны Best Game News</p>
             </div>
             <div class="social-links">
@@ -161,7 +188,7 @@
                     <button type="button"><img src="/assets/Media/Photo/vk.png" alt="ВКонтакте"></button>
                 </a>
                 <a href="#" aria-label="Discord">
-                    <button type="button"><img src="assets/Media/Photo/discord.png" alt="Discord"></button>
+                    <button type="button"><img src="/assets/Media/Photo/discord.png" alt="Discord"></button>
                 </a>
                 <a href="#" aria-label="YouTube">
                     <button type="button"><img src="/assets/Media/Photo/youtube.png" alt="YouTube"></button>

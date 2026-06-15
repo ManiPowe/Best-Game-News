@@ -35,7 +35,7 @@
                     </button>
                 </form>
                 <div class="auth">
-                    <a href="login.html">
+                    <a href="/cab.html">
                         <button class="icon-btn" type="button" aria-label="Комментарии">
                             <img src="/assets/Media/Photo/comm.png" alt="Комментарии">
                         </button>
@@ -56,30 +56,55 @@
                 <div class="left-sidebar">
                     <div class="popular-authors">
                         <h3>Популярные авторы</h3>
-                        <div class="author-card">
-                            <img src="/assets/Media/Photo/man.png" alt="Фото автора 1">
-                            <div class="author-info">
-                                <h4>Иванов Иван</h4>
-                                <p>Постов: 42 | Комментариев: 128</p>
-                                <p>Самый залайканный комментарий: 24 лайка</p>
-                            </div>
-                        </div>
-                        <div class="author-card">
-                            <img src="/assets/Media/Photo/man.png" alt="Фото автора 2">
-                            <div class="author-info">
-                                <h4>Петров Петр</h4>
-                                <p>Постов: 38 | Комментариев: 95</p>
-                                <p>Самый залайканный комментарий: 18 лайков</p>
-                            </div>
-                        </div>
-                        <div class="author-card">
-                            <img src="/assets/Media/Photo/man.png" alt="Фото автора 3">
-                            <div class="author-info">
-                                <h4>Сидоров Сидор</h4>
-                                <p>Постов: 35 | Комментариев: 150</p>
-                                <p>Самый залайканный комментарий: 30 лайков</p>
-                            </div>
-                        </div>
+                        <?php
+                        // Подключаемся к базе данных
+                        require_once('assets/app/db.php');
+
+                        // ==========================================
+                        // ШАГ 1: ПОДГОТОВЛЕННЫЙ ЗАПРОС
+                        // ==========================================
+                        // Используем mysqli_prepare() для защиты от SQL-инъекций
+                        // "ORDER BY posts_count DESC" - сортируем по убыванию количества постов
+                        // "LIMIT 3" - берём только первые 3 записи (топ-3 авторов)
+                        $sql = "SELECT id, login, avatar, posts_count, comments_count, top_liked_comment 
+                FROM users 
+                ORDER BY posts_count DESC 
+                LIMIT 3";
+
+                        // Выполняем запрос
+                        // mysqli_query() принимает 2 параметра: подключение и SQL-запрос
+                        $result = mysqli_query($conn, $sql);
+
+                        // ==========================================
+                        // ШАГ 2: ПРОВЕРКА, ЕСТЬ ЛИ РЕЗУЛЬТАТЫ
+                        // ==========================================
+                        // mysqli_num_rows() возвращает количество строк в результате
+                        if ($result && mysqli_num_rows($result) > 0):
+
+                            // ==========================================
+                            // ШАГ 3: ЦИКЛ ПО ВСЕМ АВТОРАМ
+                            // ==========================================
+                            // mysqli_fetch_assoc() возвращает ОДНУ строку результата как ассоциативный массив
+                            // Например: ['id' => 1, 'login' => 'ManiPowe?', 'avatar' => '...']
+                            // Мы вызываем его в цикле while, пока строки не закончатся
+                            while ($author = mysqli_fetch_assoc($result)):
+                                ?>
+                                <a href="cab.php?id=<?= $author['id'] ?>" class="author-card">
+                                    <img src="<?= htmlspecialchars($author['avatar']) ?>"
+                                        alt="Фото <?= htmlspecialchars($author['login']) ?>">
+                                    <div class="author-info">
+                                        <h4><?= htmlspecialchars($author['login']) ?></h4>
+                                        <p>Постов: <?= $author['posts_count'] ?> | Комментариев:
+                                            <?= $author['comments_count'] ?></p>
+                                        <p>Самый залайканный комментарий: <?= $author['top_liked_comment'] ?> лайков</p>
+                                    </div>
+                                </a>
+                            <?php
+                            endwhile; // Закрываем цикл while
+                        else:
+                            ?>
+                            <p style="color: #b0b0b0; text-align: center; padding: 10px;">Пока нет авторов</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
