@@ -414,59 +414,6 @@
      background: #ff4444;
  }
 
- .footer {
-     margin-top: 3rem;
-     width: 100%;
-     display: flex;
-     align-items: center;
-     justify-content: space-between;
-     background-color: #292929;
-     padding: 20px;
-     flex-wrap: wrap;
-     gap: 20px;
- }
-
- .footer-logo {
-     display: flex;
-     align-items: center;
-     gap: 15px;
-     flex-shrink: 0;
- }
-
- .footer-logo p {
-     font-size: 28px;
-     font-weight: bold;
-     color: #df1b1b;
- }
-
- .social-links {
-     display: flex;
-     gap: 10px;
-     flex-wrap: wrap;
-     justify-content: center;
- }
-
- .social-links a {
-     display: block;
- }
-
- .social-links button {
-     background: transparent;
-     border: none;
-     cursor: pointer;
-     padding: 5px;
-     border-radius: 10px;
-     transition: background-color 0.3s ease;
- }
-
- .social-links button:hover {
-     background-color: rgba(255, 255, 255, 0.1);
- }
-
- .social-links img {
-     width: 24px;
-     height: 24px;
- }
 
  @media (max-width: 1024px) {
      .dashboard {

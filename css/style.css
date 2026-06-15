@@ -98,6 +98,7 @@ body {
     padding: 5px;
     border-radius: 10px;
     transition: background-color 0.3s ease;
+
 }
 
 .search-btn:hover,
@@ -161,6 +162,10 @@ main {
     font-size: 18px;
     margin-bottom: 15px;
     text-align: center;
+}
+
+.popular-authors a {
+    text-decoration: none;
 }
 
 .author-card {
@@ -684,6 +689,32 @@ main {
 
 .prav {
     color: rgb(196, 196, 196);
+}
+
+.header-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #df1b1b;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.header-avatar:hover {
+    transform: scale(1.1);
+    border-color: #ff4444;
+}
+
+.user-avatar-link {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.user-avatar-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 1024px) {
