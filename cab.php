@@ -34,7 +34,7 @@ $_SESSION['avatar'] = $user['avatar'];
     <link rel="stylesheet" href="css/cab.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="">
 </head>
 
 <body>
