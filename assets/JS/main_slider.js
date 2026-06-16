@@ -148,30 +148,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Находим элементы (используем ваш класс .marquee-content)
+
     const track = document.querySelector('.marquee-content');
     const upBtn = document.querySelector('.up-btn');
     const downBtn = document.querySelector('.down-btn');
     
-    // Получаем все оригинальные элементы внутри трека
     const originalItems = Array.from(track.children);
     
-    // 2. ТРЮК БЕСКОНЕЧНОСТИ: Клонируем элементы и добавляем их в конец
     originalItems.forEach(item => {
         const clone = item.cloneNode(true);
         track.appendChild(clone);
     });
 
-    // 3. Переменные состояния
     let posY = 0;
-    const speed = 0.5; // Скорость автопрокрутки (пикселей за кадр)
+    const speed = 0.2;
     let isPaused = false;
     let animationId;
 
-    // Вычисляем высоту одного полного набора элементов
     const singleSetHeight = track.scrollHeight / 2;
 
-    // 4. Функция анимации
     function animate() {
         if (!isPaused) {
             posY -= speed;
@@ -185,11 +180,9 @@ document.addEventListener('DOMContentLoaded', function() {
         animationId = requestAnimationFrame(animate);
     }
 
-    // 5. Запускаем анимацию
     animate();
 
-    // 6. Логика кнопок
-    const step = 50; // На сколько пикселей сдвигать при клике
+    const step = 50;
 
     function moveUp() {
         isPaused = true;
@@ -223,11 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
 
-    // Назначаем обработчики событий
     upBtn.addEventListener('click', moveUp);
     downBtn.addEventListener('click', moveDown);
 
-    // 7. Остановка при наведении мыши
     const marqueeContainer = document.querySelector('.game-marquee');
     marqueeContainer.addEventListener('mouseenter', () => {
         isPaused = true;
