@@ -62,15 +62,18 @@ $_SESSION['avatar'] = $user['avatar'];
                     </button>
                 </form>
                 <div class="auth">
-                    <a href="#">
-                        <button class="icon-btn" type="button" aria-label="Комментарии">
-                            <img src="/assets/Media/Photo/comm.png" alt="Комментарии">
-                        </button>
-                    </a>
-                    <a href="cab.php">
-                        <button class="icon-btn" type="button" aria-label="Профиль">
-                            <img src="/assets/Media/Photo/man.png" alt="Профиль">
-                        </button>
+
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="cab.php" class="user-avatar-link">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                        </a>
+                    <?php else: ?>
+                        <a href="login.php">
+                            <button class="icon-btn" type="button" aria-label="Вход">
+                                <img src="/assets/Media/Photo/man.png" alt="Вход">
+                            </button>
+                        </a>
+                    <?php endif; ?>
                     </a>
                 </div>
             </div>
@@ -90,16 +93,8 @@ $_SESSION['avatar'] = $user['avatar'];
                     <span>Настройки</span>
                 </a>
                 <a href="#" class="menu-item">
-                    <i class="fas fa-history"></i>
-                    <span>Активность</span>
-                </a>
-                <a href="#" class="menu-item">
                     <i class="fas fa-bookmark"></i>
                     <span>Избранное</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-comments"></i>
-                    <span>Комментарии</span>
                 </a>
                 <a href="#" class="menu-item">
                     <i class="fas fa-bell"></i>
@@ -114,7 +109,6 @@ $_SESSION['avatar'] = $user['avatar'];
             <div class="content-area">
                 <div class="content-header">
                     <h2>Профиль пользователя</h2>
-                    <button><i class="fas fa-save"></i> Сохранить</button>
                 </div>
 
                 <div class="profile-header">
@@ -144,10 +138,6 @@ $_SESSION['avatar'] = $user['avatar'];
 
                         <div class="profile-stats">
                             <div class="stat-item">
-                                <div class="stat-value"><?= $user['posts_count'] ?? 0 ?></div>
-                                <div class="stat-label">Постов</div>
-                            </div>
-                            <div class="stat-item">
                                 <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
                                 <div class="stat-label">Комментариев</div>
                             </div>
@@ -158,25 +148,46 @@ $_SESSION['avatar'] = $user['avatar'];
                         </div>
                     </div>
                 </div>
+ 
+                <?php if (isset($_SESSION['profile_message'])): ?>
+                    <div class="alert alert-<?= $_SESSION['profile_message_type'] ?? 'success' ?>"
+                        style="margin-bottom: 20px;">
+                        <?= $_SESSION['profile_message'] ?>
+                    </div>
+                    <?php
+                    unset($_SESSION['profile_message']);
+                    unset($_SESSION['profile_message_type']);
+                    ?>
+                <?php endif; ?>
 
-                <div class="profile-form">
-                    <div class="form-group">
-                        <label for="username">Имя пользователя</label>
-                        <input type="text" id="username" value="<?= htmlspecialchars($user['login']) ?>">
+                <form action="assets/app/update_profile.php" method="POST" class="profile-form-wrapper">
+                    <div class="profile-form">
+                        <div class="form-group">
+                            <label for="login">Имя пользователя</label>
+                            <input type="text" id="login" name="login" value="<?= htmlspecialchars($user['login']) ?>"
+                                required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Телефон</label>
+                            <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($user['phone']) ?>"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bio">О себе</label>
+                            <textarea id="bio" name="bio"
+                                rows="3"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" value="<?= htmlspecialchars($user['email']) ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Телефон</label>
-                        <input type="tel" id="phone" value="<?= htmlspecialchars($user['phone']) ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="bio">О себе</label>
-                        <textarea id="bio" rows="3">Узник 2к птс, ищу бустеров</textarea>
-                    </div>
-                </div>
+
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> Сохранить изменения
+                    </button>
+                </form> 
             </div>
         </div>
     </main>

@@ -39,11 +39,6 @@ require_once 'assets/app/db.php';
                     </button>
                 </form>
                 <div class="auth">
-                    <a href="#">
-                        <button class="icon-btn" type="button" aria-label="Комментарии">
-                            <img src="/assets/Media/Photo/comm.png" alt="Комментарии">
-                        </button>
-                    </a>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
@@ -71,7 +66,7 @@ require_once 'assets/app/db.php';
                         $sql = "SELECT id, login, avatar, posts_count, comments_count, top_liked_comment 
                 FROM users 
                 ORDER BY posts_count DESC 
-                LIMIT 3";
+                LIMIT 10";
 
                         $result = mysqli_query($conn, $sql);
 
@@ -79,7 +74,7 @@ require_once 'assets/app/db.php';
 
                             while ($author = mysqli_fetch_assoc($result)):
                                 ?>
-                                <a href="cab.php?id=<?= $author['id'] ?>" class="author-card">
+                                <a href="profile.php?id=<?= $author['id'] ?>" class="author-card">
                                     <img src="<?= htmlspecialchars($author['avatar']) ?>"
                                         alt="Фото <?= htmlspecialchars($author['login']) ?>">
                                     <div class="author-info">
