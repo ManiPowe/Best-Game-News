@@ -24,12 +24,29 @@ require_once 'assets/app/db.php';
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
+                <a href="index.php">Главная</a>
                 <a href="#">Игры</a>
-                <a href="#">Новости</a>
+                <a href="">Новости</a>
                 <a href="#">Статьи</a>
                 <a href="#">Видео</a>
                 <a href="#">Прохождения</a>
                 <a href="#">Помощь</a>
+
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php
+                    $check_role_sql = "SELECT role FROM users WHERE id = ?";
+                    $stmt_role = mysqli_prepare($conn, $check_role_sql);
+                    mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+                    mysqli_stmt_execute($stmt_role);
+                    $result_role = mysqli_stmt_get_result($stmt_role);
+                    $user_role = mysqli_fetch_assoc($result_role)['role'];
+
+                    if ($user_role === 'creator' || $user_role === 'admin'):
+                        ?>
+                        <a href="create_news.php" class="create-news-btn"> Создать новость
+                        </a>
+                    <?php endif; ?>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
                 <form action="#" method="get">
@@ -63,15 +80,16 @@ require_once 'assets/app/db.php';
                         <h3>Популярные авторы</h3>
                         <?php
                         require_once('assets/app/db.php');
+
                         $sql = "SELECT id, login, avatar, posts_count, comments_count, top_liked_comment 
                 FROM users 
+                WHERE role IN ('creator', 'admin')
                 ORDER BY posts_count DESC 
                 LIMIT 10";
 
                         $result = mysqli_query($conn, $sql);
 
                         if ($result && mysqli_num_rows($result) > 0):
-
                             while ($author = mysqli_fetch_assoc($result)):
                                 ?>
                                 <a href="profile.php?id=<?= $author['id'] ?>" class="author-card">
@@ -93,7 +111,6 @@ require_once 'assets/app/db.php';
                         <?php endif; ?>
                     </div>
                 </div>
-
                 <div class="main-content">
                     <div class="hero-section">
                         <div class="hero-slider">
@@ -102,7 +119,8 @@ require_once 'assets/app/db.php';
                                     <img src="/assets/Media/Photo/dota2.png" loading="lazy" alt="DOTA 2">
                                     <div class="hero-text">
                                         <h2>DOTA 2</h2>
-                                        <p>В игре DOTA 2 стартовал новый ивент, приуроченный коллаборацией DOTA 2 X
+                                        <p>В игре DOTA 2 стартовал новый ивент, приуроченный коллаборацией DOTA
+                                            2 X
                                             Monster Hunter!</p>
                                         <a href="#">Подробнее...</a>
                                     </div>
@@ -112,7 +130,8 @@ require_once 'assets/app/db.php';
                                         alt="Atomic Heart">
                                     <div class="hero-text">
                                         <h2>Atomic Heart</h2>
-                                        <p>Mundfish показала парочку скриншотов грядущего дополнения DLC для Atomic
+                                        <p>Mundfish показала парочку скриншотов грядущего дополнения DLC для
+                                            Atomic
                                             Heart</p>
                                         <a href="#">Подробнее...</a>
                                     </div>
@@ -142,7 +161,8 @@ require_once 'assets/app/db.php';
                                 <div class="news-content">
                                     <div class="content-main">
                                         <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для Atomic
+                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
+                                            Atomic
                                             Heart</p>
                                         <a href="#">Читать далее</a>
                                     </div>
@@ -177,7 +197,8 @@ require_once 'assets/app/db.php';
                                 <div class="news-content">
                                     <div class="content-main">
                                         <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для Atomic
+                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
+                                            Atomic
                                             Heart</p>
                                         <a href="#">Читать далее</a>
                                     </div>
@@ -212,7 +233,8 @@ require_once 'assets/app/db.php';
                                 <div class="news-content">
                                     <div class="content-main">
                                         <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для Atomic
+                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
+                                            Atomic
                                             Heart</p>
                                         <a href="#">Читать далее</a>
                                     </div>

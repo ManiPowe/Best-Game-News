@@ -105,10 +105,8 @@ if ($is_logged_in && !$is_own_profile) {
     <main>
         <main>
             <div class="profile-container">
-                <!-- Обёртка для двух колонок (только для креаторов) -->
                 <?php if ($is_creator): ?>
                     <div class="profile-layout">
-                        <!-- Левая колонка: Информация -->
                         <div class="profile-card">
                             <div class="profile-header">
                                 <div class="avatar">
@@ -126,7 +124,8 @@ if ($is_logged_in && !$is_own_profile) {
                                     <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
                                     <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
                                     <p><i class="fas fa-calendar"></i> Участник с
-                                        <?= date('d.m.Y', strtotime($user['created_at'])) ?></p>
+                                        <?= date('d.m.Y', strtotime($user['created_at'])) ?>
+                                    </p>
                                 </div>
                             </div>
 
@@ -138,14 +137,89 @@ if ($is_logged_in && !$is_own_profile) {
                             <?php endif; ?>
                         </div>
 
-                        <!-- Правая колонка: Посты -->
                         <div class="posts-section">
                             <h3>Посты (<?= $user['posts_count'] ?? 0 ?>)</h3>
-                            <p class="coming-soon">Раздел в разработке...</p>
+
+                            <?php
+                            $is_author = ($is_logged_in && $_SESSION['user_id'] == $target_user_id);
+
+                            $posts_sql = "SELECT id, title, image, status, created_at 
+                  FROM news 
+                  WHERE author_id = ?";
+
+                            if (!$is_author) {
+                                $posts_sql .= " AND status = 'published'";
+                            }
+
+                            $posts_sql .= " ORDER BY created_at DESC";
+
+                            $posts_stmt = mysqli_prepare($conn, $posts_sql);
+                            mysqli_stmt_bind_param($posts_stmt, "i", $target_user_id);
+                            mysqli_stmt_execute($posts_stmt);
+                            $posts_result = mysqli_stmt_get_result($posts_stmt);
+                            $posts = [];
+                            while ($post = mysqli_fetch_assoc($posts_result)) {
+                                $posts[] = $post;
+                            }
+                            ?>
+
+                            <?php if (!empty($posts)): ?>
+                                <div class="user-posts-list">
+                                    <?php foreach ($posts as $post): ?>
+                                        <div class="user-post-card-wrapper">
+                                            <a href="news.php?id=<?= $post['id'] ?>" class="user-post-card">
+                                                <?php if ($post['image']): ?>
+                                                    <img src="<?= htmlspecialchars($post['image']) ?>"
+                                                        alt="<?= htmlspecialchars($post['title']) ?>" class="post-cover">
+                                                <?php else: ?>
+                                                    <div class="post-cover-placeholder">
+                                                        <i class="fas fa-newspaper"></i>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <div class="post-info">
+                                                    <h4><?= htmlspecialchars($post['title']) ?></h4>
+                                                    <span class="post-status status-<?= $post['status'] ?>">
+                                                        <?= $post['status'] === 'published' ? 'Опубликовано' : 'Черновик' ?>
+                                                    </span>
+                                                    <span
+                                                        class="post-date"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
+                                                </div>
+                                            </a>
+
+                                            <?php if ($is_author): ?>
+                                                <div class="post-actions">
+                                                    <?php if ($post['status'] === 'draft'): ?>
+                                                        <form action="assets/app/publish_news.php" method="POST" style="display: inline;">
+                                                            <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
+                                                            <button type="submit" class="action-btn publish-btn" title="Опубликовать">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
+
+                                                    <a href="edit_news.php?id=<?= $post['id'] ?>" class="action-btn edit-btn"
+                                                        title="Редактировать">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    <form action="assets/app/delete_news.php" method="POST" style="display: inline;"
+                                                        onsubmit="return confirm('Удалить эту новость?');">
+                                                        <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
+                                                        <button type="submit" class="action-btn delete-btn" title="Удалить">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="no-posts">Пользователь ещё не создал ни одного поста.</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php else: ?>
-                    <!-- Для обычных пользователей: только информация -->
                     <div class="profile-card">
                         <div class="profile-header">
                             <div class="avatar">
@@ -160,7 +234,8 @@ if ($is_logged_in && !$is_own_profile) {
                                 <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
                                 <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
                                 <p><i class="fas fa-calendar"></i> Участник с
-                                    <?= date('d.m.Y', strtotime($user['created_at'])) ?></p>
+                                    <?= date('d.m.Y', strtotime($user['created_at'])) ?>
+                                </p>
                                 <?php if (!empty($user['bio'])): ?>
                                     <p class="profile-bio-text"><i class="fas fa-info-circle"></i>
                                         <?= nl2br(htmlspecialchars($user['bio'])) ?>
@@ -178,7 +253,6 @@ if ($is_logged_in && !$is_own_profile) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Блок отзывов (только для креаторов) -->
                 <?php if ($is_creator): ?>
                     <div class="reviews-section">
                         <h3>Отзывы (<?= count($reviews) ?>)</h3>
@@ -244,7 +318,6 @@ if ($is_logged_in && !$is_own_profile) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Комментарии пользователя (для всех) -->
                 <div class="user-comments-section">
                     <h3>Последние комментарии</h3>
                     <?php

@@ -95,6 +95,16 @@ main {
     text-decoration: underline;
 }
 
+.auth-form .form-group input,
+.auth-form .form-group label,
+.auth-container p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
+}
+
 @media (max-width: 480px) {
     .auth-container {
         margin: 1rem;

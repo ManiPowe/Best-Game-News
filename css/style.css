@@ -715,6 +715,32 @@ main {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.create-news-btn {
+    background: #5c5b5b;
+
+}
+
+.create-news-btn i {
+    margin-right: 5px;
+}
+
+.news-content,
+.news-content p,
+.hero-text p,
+.hero-text h2,
+.author-info p,
+.author-info h4,
+.meta-value,
+.game-name,
+.news-list h3,
+.news-list p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
+}
+
 @media (max-width: 1024px) {
     .header {
         flex-direction: column;

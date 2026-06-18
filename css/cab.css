@@ -414,8 +414,19 @@
      background: #ff4444;
  }
 
+ .profile-form .form-group input,
+ .profile-form .form-group textarea,
+ .profile-info p,
+ .profile-bio p,
+ .stat-label,
+ .stat-value {
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     word-break: break-word;
+     white-space: normal;
+     max-width: 100%;
+ }
 
- 
  @media (max-width: 1024px) {
      .dashboard {
          grid-template-columns: 1fr;

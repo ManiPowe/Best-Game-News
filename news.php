@@ -2,18 +2,17 @@
 session_start();
 require_once 'assets/app/db.php';
 
-// Получаем ID новости
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header("Location: index.php");
     exit;
 }
 
-$news_id = (int)$_GET['id'];
+$news_id = (int) $_GET['id'];
 
-// Получаем данные новости
-$sql = "SELECT n.*, u.login as author_login, u.avatar as author_avatar 
+$sql = "SELECT n.*, u.login as author_login, u.avatar as author_avatar, g.name as game_name, g.icon as game_icon
         FROM news n 
         JOIN users u ON n.author_id = u.id 
+        LEFT JOIN games g ON n.game_id = g.id
         WHERE n.id = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "i", $news_id);
@@ -25,10 +24,8 @@ if (!$news) {
     die("Новость не найдена!");
 }
 
-// Увеличиваем счётчик просмотров
 mysqli_query($conn, "UPDATE news SET views = views + 1 WHERE id = $news_id");
 
-// Получаем комментарии
 $sql_comments = "SELECT c.*, u.login, u.avatar 
                 FROM comments c 
                 JOIN users u ON c.user_id = u.id 
@@ -47,6 +44,7 @@ $is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +54,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
     <header>
         <div class="header">
@@ -74,8 +73,14 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <a href="#">Помощь</a>
             </nav>
             <div class="search-wrap">
+                <form action="#" method="get">
+                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                    <button type="submit" class="search-btn">
+                        <img src="/assets/Media/Photo/search.png" alt="Поиск">
+                    </button>
+                </form>
                 <div class="auth">
-                    <?php if ($is_logged_in): ?>
+                    <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
                         </a>
@@ -95,7 +100,19 @@ $is_logged_in = isset($_SESSION['user_id']);
         <div class="news-container">
             <article class="news-article">
                 <h1><?= htmlspecialchars($news['title']) ?></h1>
-                
+
+                <?php if ($news['game_name']): ?>
+                    <div class="news-game-badge">
+                        <?php if ($news['game_icon']): ?>
+                            <img src="<?= htmlspecialchars($news['game_icon']) ?>"
+                                alt="<?= htmlspecialchars($news['game_name']) ?>">
+                        <?php endif; ?>
+                        <span>
+                            <?= htmlspecialchars($news['game_name']) ?>
+                        </span>
+                    </div>
+                <?php endif; ?>
+
                 <div class="news-meta">
                     <a href="profile.php?id=<?= $news['author_id'] ?>" class="news-author">
                         <img src="<?= htmlspecialchars($news['author_avatar']) ?>" alt="Автор">
@@ -106,7 +123,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                 </div>
 
                 <?php if ($news['image']): ?>
-                    <img src="<?= htmlspecialchars($news['image']) ?>" alt="<?= htmlspecialchars($news['title']) ?>" class="news-image">
+                    <img src="<?= htmlspecialchars($news['image']) ?>" alt="<?= htmlspecialchars($news['title']) ?>"
+                        class="news-image">
                 <?php endif; ?>
 
                 <div class="news-content">
@@ -123,7 +141,6 @@ $is_logged_in = isset($_SESSION['user_id']);
                 </div>
             </article>
 
-            <!-- Комментарии -->
             <div class="comments-section">
                 <h3>Комментарии (<?= count($comments) ?>)</h3>
 
@@ -135,7 +152,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                     </form>
                 <?php else: ?>
                     <div class="auth-prompt">
-                        <p>Хотите оставить комментарий? <a href="login.php">Войдите</a> или <a href="reg.php">зарегистрируйтесь</a>!</p>
+                        <p>Хотите оставить комментарий? <a href="login.php">Войдите</a> или <a
+                                href="reg.php">зарегистрируйтесь</a>!</p>
                     </div>
                 <?php endif; ?>
 
@@ -148,7 +166,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                                         <img src="<?= htmlspecialchars($comment['avatar']) ?>" alt="Автор">
                                         <span><?= htmlspecialchars($comment['login']) ?></span>
                                     </a>
-                                    <span class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></span>
+                                    <span
+                                        class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></span>
                                 </div>
                                 <div class="comment-text">
                                     <?= nl2br(htmlspecialchars($comment['text'])) ?>
@@ -195,4 +214,5 @@ $is_logged_in = isset($_SESSION['user_id']);
         </div>
     </footer>
 </body>
+
 </html>

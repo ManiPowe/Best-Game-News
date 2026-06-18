@@ -84,17 +84,21 @@ $_SESSION['avatar'] = $user['avatar'];
         <div class="dashboard">
             <aside class="sidebar">
                 <h3>Мой аккаунт</h3>
-                <a href="#" class="menu-item active">
+                <a href="profile.php?id=<?= $user_id ?>" class="menu-item">
                     <i class="fas fa-user"></i>
-                    <span>Профиль</span>
+                    <span>Мой профиль</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="#" class="menu-item active">
                     <i class="fas fa-cog"></i>
                     <span>Настройки</span>
                 </a>
                 <a href="#" class="menu-item">
                     <i class="fas fa-bookmark"></i>
                     <span>Избранное</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-comments"></i>
+                    <span>Комментарии</span>
                 </a>
                 <a href="#" class="menu-item">
                     <i class="fas fa-bell"></i>
@@ -148,7 +152,7 @@ $_SESSION['avatar'] = $user['avatar'];
                         </div>
                     </div>
                 </div>
- 
+
                 <?php if (isset($_SESSION['profile_message'])): ?>
                     <div class="alert alert-<?= $_SESSION['profile_message_type'] ?? 'success' ?>"
                         style="margin-bottom: 20px;">
@@ -187,7 +191,7 @@ $_SESSION['avatar'] = $user['avatar'];
                     <button type="submit" class="save-btn">
                         <i class="fas fa-save"></i> Сохранить изменения
                     </button>
-                </form> 
+                </form>
             </div>
         </div>
     </main>
