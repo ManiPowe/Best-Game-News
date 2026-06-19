@@ -138,14 +138,14 @@ if ($is_logged_in && !$is_own_profile) {
                         </div>
 
                         <div class="posts-section">
-                            <h3>Посты (<?= $user['posts_count'] ?? 0 ?>)</h3>
+                            <h3>Посты</h3>
 
                             <?php
                             $is_author = ($is_logged_in && $_SESSION['user_id'] == $target_user_id);
 
                             $posts_sql = "SELECT id, title, image, status, created_at 
-                  FROM news 
-                  WHERE author_id = ?";
+              FROM news 
+              WHERE author_id = ?";
 
                             if (!$is_author) {
                                 $posts_sql .= " AND status = 'published'";
@@ -178,9 +178,25 @@ if ($is_logged_in && !$is_own_profile) {
                                                 <?php endif; ?>
                                                 <div class="post-info">
                                                     <h4><?= htmlspecialchars($post['title']) ?></h4>
-                                                    <span class="post-status status-<?= $post['status'] ?>">
-                                                        <?= $post['status'] === 'published' ? 'Опубликовано' : 'Черновик' ?>
-                                                    </span>
+
+                                                    <?php if ($is_author): ?>
+                                                        <span class="post-status status-<?= $post['status'] ?>">
+                                                            <?php
+                                                            switch ($post['status']) {
+                                                                case 'published':
+                                                                    echo 'Опубликовано';
+                                                                    break;
+                                                                case 'pending':
+                                                                    echo 'На проверке';
+                                                                    break;
+                                                                case 'draft':
+                                                                    echo 'Черновик';
+                                                                    break;
+                                                            }
+                                                            ?>
+                                                        </span>
+                                                    <?php endif; ?>
+
                                                     <span
                                                         class="post-date"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
                                                 </div>
@@ -191,8 +207,9 @@ if ($is_logged_in && !$is_own_profile) {
                                                     <?php if ($post['status'] === 'draft'): ?>
                                                         <form action="assets/app/publish_news.php" method="POST" style="display: inline;">
                                                             <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
-                                                            <button type="submit" class="action-btn publish-btn" title="Опубликовать">
-                                                                <i class="fas fa-check"></i>
+                                                            <button type="submit" class="action-btn publish-btn"
+                                                                title="Отправить на проверку">
+                                                                <i class="fas fa-paper-plane"></i>
                                                             </button>
                                                         </form>
                                                     <?php endif; ?>

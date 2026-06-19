@@ -7,7 +7,30 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     exit;
 }
 
-$news_id = (int) $_GET['id'];
+$news_id = (int)$_GET['id'];
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$session_id = session_id();
+$user_id_for_view = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+$ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+$check_view_sql = "SELECT id FROM news_views WHERE news_id = ? AND session_id = ?";
+$stmt_check_view = mysqli_prepare($conn, $check_view_sql);
+mysqli_stmt_bind_param($stmt_check_view, "is", $news_id, $session_id);
+mysqli_stmt_execute($stmt_check_view);
+mysqli_stmt_store_result($stmt_check_view);
+
+if (mysqli_stmt_num_rows($stmt_check_view) === 0) {
+    $insert_view_sql = "INSERT INTO news_views (news_id, session_id, user_id, ip_address) VALUES (?, ?, ?, ?)";
+    $stmt_insert_view = mysqli_prepare($conn, $insert_view_sql);
+    mysqli_stmt_bind_param($stmt_insert_view, "isis", $news_id, $session_id, $user_id_for_view, $ip_address);
+    mysqli_stmt_execute($stmt_insert_view);
+    
+    mysqli_query($conn, "UPDATE news SET views = views + 1 WHERE id = $news_id");
+}
 
 $sql = "SELECT n.*, u.login as author_login, u.avatar as author_avatar, g.name as game_name, g.icon as game_icon
         FROM news n 
@@ -24,7 +47,27 @@ if (!$news) {
     die("Новость не найдена!");
 }
 
-mysqli_query($conn, "UPDATE news SET views = views + 1 WHERE id = $news_id");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$session_id = session_id();
+$user_id_for_view = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+$ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+$check_view_sql = "SELECT id FROM news_views WHERE news_id = ? AND session_id = ?";
+$stmt_check_view = mysqli_prepare($conn, $check_view_sql);
+mysqli_stmt_bind_param($stmt_check_view, "is", $news_id, $session_id);
+mysqli_stmt_execute($stmt_check_view);
+mysqli_stmt_store_result($stmt_check_view);
+
+if (mysqli_stmt_num_rows($stmt_check_view) === 0) {
+    $insert_view_sql = "INSERT INTO news_views (news_id, session_id, user_id, ip_address) VALUES (?, ?, ?, ?)";
+    $stmt_insert_view = mysqli_prepare($conn, $insert_view_sql);
+    mysqli_stmt_bind_param($stmt_insert_view, "isis", $news_id, $session_id, $user_id_for_view, $ip_address);
+    mysqli_stmt_execute($stmt_insert_view);
+
+    mysqli_query($conn, "UPDATE news SET views = views + 1 WHERE id = $news_id");
+}
 
 $sql_comments = "SELECT c.*, u.login, u.avatar 
                 FROM comments c 

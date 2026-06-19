@@ -176,8 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label for="status">Статус</label>
                         <select id="status" name="status">
-                            <option value="published">Опубликовать</option>
-                            <option value="draft">Черновик</option>
+                            <option value="draft">Черновик (сохранить и редактировать позже)</option>
+                            <option value="pending">Отправить на проверку модератору</option>
                         </select>
                     </div>
                 </div>

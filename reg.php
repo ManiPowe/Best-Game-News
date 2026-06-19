@@ -49,22 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../css/reg.css">
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="icon" href="../../assets/Media/Photo/asd.png">
+    <link rel="stylesheet" href="css/reg.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="assets/Media/Photo/asd.png">
     <title>Регистрация - Best Game News</title>
 </head>
 <body>
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="../../index.php">
-                    <img src="../../assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
+                <a class="logo-link" href="index.php">
+                    <img src="assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="../../index.php">Главная</a>
+                <a href="index.php">Главная</a>
                 <a href="login.php">Вход</a>
             </nav>
         </div>

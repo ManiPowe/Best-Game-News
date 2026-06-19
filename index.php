@@ -18,7 +18,7 @@ require_once 'assets/app/db.php';
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.html">
+                <a class="logo-link" href="index.php">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>

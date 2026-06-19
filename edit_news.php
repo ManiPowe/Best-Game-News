@@ -24,7 +24,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     exit;
 }
 
-$news_id = (int)$_GET['id'];
+$news_id = (int) $_GET['id'];
 
 $check_sql = "SELECT * FROM news WHERE id = ? AND author_id = ?";
 $stmt_check = mysqli_prepare($conn, $check_sql);
@@ -45,10 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = trim($_POST['content']);
     $short_description = trim($_POST['short_description']);
     $category = $_POST['category'];
-    $game_id = !empty($_POST['game_id']) ? (int)$_POST['game_id'] : null;
+    $game_id = !empty($_POST['game_id']) ? (int) $_POST['game_id'] : null;
     $tags = trim($_POST['tags']);
     $status = $_POST['status'];
-    
+
     if (empty($title) || empty($content)) {
         $error = "Заголовок и содержание обязательны!";
     } elseif ($category === 'games' && !$game_id) {
@@ -59,17 +59,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $file = $_FILES['cover'];
             $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-            
+
             if (in_array($extension, $allowed)) {
                 $unique_name = 'news_' . uniqid() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
                 $upload_dir = __DIR__ . '/assets/Media/news/';
-                
+
                 if (!file_exists($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
                 }
-                
+
                 $destination = $upload_dir . $unique_name;
-                
+
                 if (move_uploaded_file($file['tmp_name'], $destination)) {
                     if ($news['image'] && file_exists($news['image'])) {
                         unlink($news['image']);
@@ -78,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
-        
+
         $sql = "UPDATE news SET title = ?, content = ?, short_description = ?, image = ?, category = ?, game_id = ?, tags = ?, status = ? WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "sssssisii", $title, $content, $short_description, $image_path, $category, $game_id, $tags, $status, $news_id);
-        
+
         if (mysqli_stmt_execute($stmt)) {
             $success = "Новость успешно обновлена!";
             $news['title'] = $title;
@@ -108,6 +108,7 @@ while ($game = mysqli_fetch_assoc($games_result)) {
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,11 +118,12 @@ while ($game = mysqli_fetch_assoc($games_result)) {
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body>
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.html">
+                <a class="logo-link" href="index.php">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
@@ -163,33 +165,37 @@ while ($game = mysqli_fetch_assoc($games_result)) {
     <main>
         <div class="create-news-container">
             <h1><i class="fas fa-edit"></i> Редактирование новости</h1>
-            
+
             <?php if ($error): ?>
                 <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
-            
+
             <?php if ($success): ?>
                 <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
             <?php endif; ?>
-            
-            <form action="edit_news.php?id=<?= $news_id ?>" method="POST" enctype="multipart/form-data" class="create-news-form">
+
+            <form action="edit_news.php?id=<?= $news_id ?>" method="POST" enctype="multipart/form-data"
+                class="create-news-form">
                 <div class="form-group">
                     <label for="title">Заголовок *</label>
-                    <input type="text" id="title" name="title" required maxlength="255" value="<?= htmlspecialchars($news['title']) ?>">
+                    <input type="text" id="title" name="title" required maxlength="255"
+                        value="<?= htmlspecialchars($news['title']) ?>">
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="category">Категория</label>
                         <select id="category" name="category" onchange="toggleGameSelect()">
                             <option value="news" <?= $news['category'] === 'news' ? 'selected' : '' ?>>Новости</option>
                             <option value="games" <?= $news['category'] === 'games' ? 'selected' : '' ?>>Игры</option>
-                            <option value="articles" <?= $news['category'] === 'articles' ? 'selected' : '' ?>>Статьи</option>
+                            <option value="articles" <?= $news['category'] === 'articles' ? 'selected' : '' ?>>Статьи
+                            </option>
                             <option value="videos" <?= $news['category'] === 'videos' ? 'selected' : '' ?>>Видео</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group" id="game-select-group" style="display: <?= $news['category'] === 'games' ? 'block' : 'none' ?>;">
+
+                    <div class="form-group" id="game-select-group"
+                        style="display: <?= $news['category'] === 'games' ? 'block' : 'none' ?>;">
                         <label for="game_id">Выберите игру</label>
                         <select id="game_id" name="game_id">
                             <option value="">-- Выберите игру --</option>
@@ -200,42 +206,53 @@ while ($game = mysqli_fetch_assoc($games_result)) {
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="status">Статус</label>
                         <select id="status" name="status">
-                            <option value="published" <?= $news['status'] === 'published' ? 'selected' : '' ?>>Опубликовать</option>
                             <option value="draft" <?= $news['status'] === 'draft' ? 'selected' : '' ?>>Черновик</option>
+                            <option value="pending" <?= $news['status'] === 'pending' ? 'selected' : '' ?>>На проверке
+                            </option>
+                            <?php if ($news['status'] === 'published'): ?>
+                                <option value="published" selected>Опубликовано</option>
+                            <?php endif; ?>
                         </select>
+                        <?php if ($news['status'] === 'published'): ?>
+                            <small style="color: #4CAF50;">Новость уже опубликована. Статус можно изменить только через
+                                админ-панель.</small>
+                        <?php endif; ?>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="short_description">Краткое описание</label>
-                    <textarea id="short_description" name="short_description" rows="3"><?= htmlspecialchars($news['short_description'] ?? '') ?></textarea>
+                    <textarea id="short_description" name="short_description"
+                        rows="3"><?= htmlspecialchars($news['short_description'] ?? '') ?></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="content">Содержание *</label>
-                    <textarea id="content" name="content" rows="15" required><?= htmlspecialchars($news['content']) ?></textarea>
+                    <textarea id="content" name="content" rows="15"
+                        required><?= htmlspecialchars($news['content']) ?></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="tags">Теги (через запятую)</label>
                     <input type="text" id="tags" name="tags" value="<?= htmlspecialchars($news['tags'] ?? '') ?>">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="cover">Обложка новости</label>
                     <?php if ($news['image']): ?>
                         <div style="margin-bottom: 10px;">
-                            <img src="<?= htmlspecialchars($news['image']) ?>" alt="Текущая обложка" style="max-width: 300px; border-radius: 8px;">
+                            <img src="<?= htmlspecialchars($news['image']) ?>" alt="Текущая обложка"
+                                style="max-width: 300px; border-radius: 8px;">
                         </div>
                     <?php endif; ?>
                     <input type="file" id="cover" name="cover" accept="image/*">
                     <small style="color: #b0b0b0;">Оставьте пустым, чтобы не менять обложку</small>
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-save"></i> Сохранить изменения
@@ -279,20 +296,21 @@ while ($game = mysqli_fetch_assoc($games_result)) {
     </footer>
 
     <script>
-    function toggleGameSelect() {
-        const category = document.getElementById('category').value;
-        const gameSelectGroup = document.getElementById('game-select-group');
-        const gameIdSelect = document.getElementById('game_id');
-        
-        if (category === 'games') {
-            gameSelectGroup.style.display = 'block';
-            gameIdSelect.required = true;
-        } else {
-            gameSelectGroup.style.display = 'none';
-            gameIdSelect.required = false;
-            gameIdSelect.value = '';
+        function toggleGameSelect() {
+            const category = document.getElementById('category').value;
+            const gameSelectGroup = document.getElementById('game-select-group');
+            const gameIdSelect = document.getElementById('game_id');
+
+            if (category === 'games') {
+                gameSelectGroup.style.display = 'block';
+                gameIdSelect.required = true;
+            } else {
+                gameSelectGroup.style.display = 'none';
+                gameIdSelect.required = false;
+                gameIdSelect.value = '';
+            }
         }
-    }
     </script>
 </body>
+
 </html>
