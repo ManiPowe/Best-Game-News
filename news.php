@@ -7,14 +7,14 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     exit;
 }
 
-$news_id = (int)$_GET['id'];
+$news_id = (int) $_GET['id'];
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 $session_id = session_id();
-$user_id_for_view = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+$user_id_for_view = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
 $check_view_sql = "SELECT id FROM news_views WHERE news_id = ? AND session_id = ?";
@@ -28,7 +28,7 @@ if (mysqli_stmt_num_rows($stmt_check_view) === 0) {
     $stmt_insert_view = mysqli_prepare($conn, $insert_view_sql);
     mysqli_stmt_bind_param($stmt_insert_view, "isis", $news_id, $session_id, $user_id_for_view, $ip_address);
     mysqli_stmt_execute($stmt_insert_view);
-    
+
     mysqli_query($conn, "UPDATE news SET views = views + 1 WHERE id = $news_id");
 }
 
@@ -94,6 +94,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <title><?= htmlspecialchars($news['title']) ?> - Best Game News</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/news.css">
+    <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -174,12 +175,47 @@ $is_logged_in = isset($_SESSION['user_id']);
                     <?= nl2br(htmlspecialchars($news['content'])) ?>
                 </div>
 
+                <?php
+                $is_liked = false;
+                $is_favorited = false;
+
+                if ($is_logged_in) {
+                    $like_check_sql = "SELECT id FROM news_likes WHERE user_id = ? AND news_id = ?";
+                    $like_check_stmt = mysqli_prepare($conn, $like_check_sql);
+                    mysqli_stmt_bind_param($like_check_stmt, "ii", $_SESSION['user_id'], $news_id);
+                    mysqli_stmt_execute($like_check_stmt);
+                    mysqli_stmt_store_result($like_check_stmt);
+                    $is_liked = (mysqli_stmt_num_rows($like_check_stmt) > 0);
+
+                    $fav_check_sql = "SELECT id FROM favorites WHERE user_id = ? AND news_id = ?";
+                    $fav_check_stmt = mysqli_prepare($conn, $fav_check_sql);
+                    mysqli_stmt_bind_param($fav_check_stmt, "ii", $_SESSION['user_id'], $news_id);
+                    mysqli_stmt_execute($fav_check_stmt);
+                    mysqli_stmt_store_result($fav_check_stmt);
+                    $is_favorited = (mysqli_stmt_num_rows($fav_check_stmt) > 0);
+                }
+
+                $likes_count = $news['likes_count'] ?? 0;
+
+                $fav_count_sql = "SELECT COUNT(*) as favorites_count FROM favorites WHERE news_id = ?";
+                $fav_count_stmt = mysqli_prepare($conn, $fav_count_sql);
+                mysqli_stmt_bind_param($fav_count_stmt, "i", $news_id);
+                mysqli_stmt_execute($fav_count_stmt);
+                $fav_count_result = mysqli_stmt_get_result($fav_count_stmt);
+                $favorites_count = mysqli_fetch_assoc($fav_count_result)['favorites_count'] ?? 0;
+                ?>
+
                 <div class="news-actions">
-                    <button class="action-btn like-btn" data-news-id="<?= $news['id'] ?>">
-                        <i class="fas fa-heart"></i> Нравится
+                    <button class="action-btn like-btn <?= $is_liked ? 'active' : '' ?>"
+                        data-news-id="<?= $news['id'] ?>">
+                        <i class="fas fa-heart"></i>
+                        <span class="action-count"><?= $likes_count ?></span>
                     </button>
-                    <button class="action-btn favorite-btn" data-news-id="<?= $news['id'] ?>">
-                        <i class="fas fa-bookmark"></i> В избранное
+
+                    <button class="action-btn favorite-btn <?= $is_favorited ? 'active' : '' ?>"
+                        data-news-id="<?= $news['id'] ?>">
+                        <i class="fas fa-bookmark"></i>
+                        <span class="action-count"><?= $favorites_count ?></span>
                     </button>
                 </div>
             </article>
@@ -256,6 +292,8 @@ $is_logged_in = isset($_SESSION['user_id']);
             </div>
         </div>
     </footer>
+    <script src="/assets/js/like_favorite.js"></script>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>

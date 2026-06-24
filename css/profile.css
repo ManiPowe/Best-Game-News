@@ -705,6 +705,150 @@
     color: #2196F3;
 }
 
+.profile-stats {
+    display: grid;
+    gap: 15px;
+}
+
+.profile-header {
+    display: flex;
+    gap: 30px;
+    padding: 30px;
+    background: var(--bg-card);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.profile-header-left {
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    color: var(--accent-color);
+    border: 3px solid var(--accent-color);
+    overflow: hidden;
+}
+
+.profile-header-center {
+    flex: 1;
+}
+
+.profile-info h2 {
+    color: var(--accent-color);
+    font-size: 32px;
+    margin-bottom: 15px;
+    margin-top: 0;
+}
+
+.creator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(223, 27, 27, 0.3);
+}
+
+.creator-badge i {
+    font-size: 16px;
+}
+
+.profile-info p {
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-info i {
+    color: var(--accent-color);
+    width: 20px;
+    font-size: 18px;
+}
+
+/* Статистика справа */
+.profile-header-right {
+    flex-shrink: 0;
+    margin-left: auto; /* Прижимает к правому краю */
+}
+
+.profile-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-item {
+    background: var(--bg-input);
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 100px; /* Компактная ширина */
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .profile-header-right {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .profile-info p {
+        justify-content: center;
+    }
+    
+    .profile-stats {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-stats {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .stat-item {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
 .comment-text,
 .review-text,
 .profile-bio,

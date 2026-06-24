@@ -23,6 +23,28 @@ if (!$user) {
 }
 
 $_SESSION['avatar'] = $user['avatar'];
+
+$likes_sql = "SELECT COALESCE(SUM(likes_count), 0) as total_likes 
+              FROM news 
+              WHERE author_id = ? AND status = 'published'";
+$likes_stmt = mysqli_prepare($conn, $likes_sql);
+mysqli_stmt_bind_param($likes_stmt, "i", $user_id);
+mysqli_stmt_execute($likes_stmt);
+$likes_result = mysqli_stmt_get_result($likes_stmt);
+$likes_data = mysqli_fetch_assoc($likes_result);
+$total_likes = $likes_data['total_likes'];
+
+$posts_sql = "SELECT COUNT(*) as posts_count 
+              FROM news 
+              WHERE author_id = ? AND status = 'published'";
+$posts_stmt = mysqli_prepare($conn, $posts_sql);
+mysqli_stmt_bind_param($posts_stmt, "i", $user_id);
+mysqli_stmt_execute($posts_stmt);
+$posts_result = mysqli_stmt_get_result($posts_stmt);
+$posts_data = mysqli_fetch_assoc($posts_result);
+$posts_count = $posts_data['posts_count'];
+
+$current_tab = $_GET['tab'] ?? 'settings';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -31,13 +53,15 @@ $_SESSION['avatar'] = $user['avatar'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет - Best Game News</title>
-    <link rel="stylesheet" href="css/cab.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cab.css">
+    <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
+    <script src="/assets/js/file_input.js"></script>
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -62,7 +86,6 @@ $_SESSION['avatar'] = $user['avatar'];
                     </button>
                 </form>
                 <div class="auth">
-
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
@@ -74,7 +97,6 @@ $_SESSION['avatar'] = $user['avatar'];
                             </button>
                         </a>
                     <?php endif; ?>
-                    </a>
                 </div>
             </div>
         </div>
@@ -88,19 +110,19 @@ $_SESSION['avatar'] = $user['avatar'];
                     <i class="fas fa-user"></i>
                     <span>Мой профиль</span>
                 </a>
-                <a href="#" class="menu-item active">
+                <a href="?tab=settings" class="menu-item <?= $current_tab === 'settings' ? 'active' : '' ?>">
                     <i class="fas fa-cog"></i>
                     <span>Настройки</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="?tab=favorites" class="menu-item <?= $current_tab === 'favorites' ? 'active' : '' ?>">
                     <i class="fas fa-bookmark"></i>
                     <span>Избранное</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="?tab=comments" class="menu-item <?= $current_tab === 'comments' ? 'active' : '' ?>">
                     <i class="fas fa-comments"></i>
                     <span>Комментарии</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="?tab=notifications" class="menu-item <?= $current_tab === 'notifications' ? 'active' : '' ?>">
                     <i class="fas fa-bell"></i>
                     <span>Уведомления</span>
                 </a>
@@ -111,87 +133,253 @@ $_SESSION['avatar'] = $user['avatar'];
             </aside>
 
             <div class="content-area">
-                <div class="content-header">
-                    <h2>Профиль пользователя</h2>
-                </div>
-
-                <div class="profile-header">
-                    <div class="avatar">
-                        <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
-                            <i class="fas fa-user"></i>
-                        <?php else: ?>
-                            <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар"
-                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                        <?php endif; ?>
+                <?php if ($current_tab === 'settings'): ?>
+                    <!-- ========================================== -->
+                    <!-- ВКЛАДКА НАСТРОЕК (ПРОФИЛЬ) -->
+                    <!-- ========================================== -->
+                    <div class="content-header">
+                        <h2>Профиль пользователя</h2>
                     </div>
-                    <form action="assets/app/upload_avatar.php" method="POST" enctype="multipart/form-data"
-                        style="margin-top: 10px;">
-                        <input type="file" name="avatar" accept="image/*" required
-                            style="color: white; margin-bottom: 5px;">
-                        <button type="submit" class="save-btn" style="padding: 5px 10px; font-size: 14px;">Загрузить
-                            аватар</button>
+
+                    <div class="profile-header">
+                        <div class="profile-header-left">
+                            <div class="avatar">
+                                <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
+                                    <i class="fas fa-user"></i>
+                                <?php else: ?>
+                                    <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар"
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <?php endif; ?>
+                            </div>
+
+                            <form action="assets/app/upload_avatar.php" method="POST" enctype="multipart/form-data"
+                                class="avatar-upload-form">
+                                <input type="file" name="avatar" accept="image/*" required>
+                                <button type="submit" class="save-btn upload-avatar-btn">Загрузить аватар</button>
+                            </form>
+                        </div>
+
+                        <div class="profile-header-right">
+                            <div class="profile-info">
+                                <h2><?= htmlspecialchars($user['login']) ?></h2>
+                                <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
+                                <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
+                                <p><i class="fas fa-calendar"></i> Участник с
+                                    <?= date('d.m.Y', strtotime($user['created_at'])) ?>
+                                </p>
+                            </div>
+
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= $posts_count ?? 0 ?></div>
+                                    <div class="stat-label">Постов</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
+                                    <div class="stat-label">Комментариев</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value"><?= $total_likes ?? 0 ?></div>
+                                    <div class="stat-label">Лайков</div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <?php if (isset($_SESSION['profile_message'])): ?>
+                        <div class="alert alert-<?= $_SESSION['profile_message_type'] ?? 'success' ?>"
+                            style="margin-bottom: 20px;">
+                            <?= $_SESSION['profile_message'] ?>
+                        </div>
+                        <?php
+                        unset($_SESSION['profile_message']);
+                        unset($_SESSION['profile_message_type']);
+                        ?>
+                    <?php endif; ?>
+
+                    <form action="assets/app/update_profile.php" method="POST" class="profile-form-wrapper">
+                        <div class="profile-form">
+
+                            <div class="form-group">
+                                <label for="login">Имя пользователя</label>
+                                <input type="text" id="login" name="login" value="<?= htmlspecialchars($user['login']) ?>"
+                                    required minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Телефон</label>
+                                <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($user['phone']) ?>"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bio">О себе</label>
+                                <textarea id="bio" name="bio"
+                                    rows="3"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+
+                        <div class="theme-switcher-block">
+                            <h3><i class="fas fa-palette"></i> Внешний вид</h3>
+
+                            <!-- Переключатель темы -->
+                            <div class="theme-toggle-container">
+                                <span class="theme-label"><i class="fas fa-moon"></i> Тёмная</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="theme-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span class="theme-label"><i class="fas fa-sun"></i> Светлая</span>
+                            </div>
+
+                            <!-- Выбор фона -->
+                            <div class="background-selector">
+                                <h4><i class="fas fa-image"></i> Фон страницы</h4>
+                                <div class="background-options" id="background-options">
+                                    <!-- Опции генерируются через JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="save-btn">
+                            <i class="fas fa-save"></i> Сохранить изменения
+                        </button>
+
                     </form>
 
-                    <div class="profile-info">
-                        <h2><?= htmlspecialchars($user['login']) ?></h2>
-                        <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
-                        <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
-                        <p><i class="fas fa-calendar"></i> Участник с
-                            <?= date('d.m.Y', strtotime($user['created_at'])) ?>
-                        </p>
-
-                        <div class="profile-stats">
-                            <div class="stat-item">
-                                <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
-                                <div class="stat-label">Комментариев</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value"><?= $user['top_liked_comment'] ?? 0 ?></div>
-                                <div class="stat-label">Лайков</div>
-                            </div>
-                        </div>
+                <?php elseif ($current_tab === 'favorites'): ?>
+                    <!-- ========================================== -->
+                    <!-- ВКЛАДКА ИЗБРАННОГО -->
+                    <!-- ========================================== -->
+                    <div class="content-header">
+                        <h2><i class="fas fa-bookmark"></i> Избранные новости</h2>
                     </div>
-                </div>
 
-                <?php if (isset($_SESSION['profile_message'])): ?>
-                    <div class="alert alert-<?= $_SESSION['profile_message_type'] ?? 'success' ?>"
-                        style="margin-bottom: 20px;">
-                        <?= $_SESSION['profile_message'] ?>
+                    <div class="favorites-container">
+                        <?php
+                        // Получаем избранные новости пользователя
+                        $fav_sql = "SELECT n.id, n.title, n.short_description, n.image, n.category, n.game_id, 
+                                           n.likes_count, n.views, n.created_at,
+                                           u.login as author_login, u.avatar as author_avatar,
+                                           g.name as game_name, g.icon as game_icon,
+                                           (SELECT COUNT(*) FROM comments WHERE news_id = n.id) as comments_count,
+                                           (SELECT COUNT(*) FROM favorites WHERE news_id = n.id) as favorites_count
+                                    FROM favorites f
+                                    JOIN news n ON f.news_id = n.id
+                                    JOIN users u ON n.author_id = u.id
+                                    LEFT JOIN games g ON n.game_id = g.id
+                                    WHERE f.user_id = ?
+                                    ORDER BY f.created_at DESC";
+
+                        $fav_stmt = mysqli_prepare($conn, $fav_sql);
+                        mysqli_stmt_bind_param($fav_stmt, "i", $user_id);
+                        mysqli_stmt_execute($fav_stmt);
+                        $fav_result = mysqli_stmt_get_result($fav_stmt);
+                        $favorites = [];
+                        while ($fav = mysqli_fetch_assoc($fav_result)) {
+                            $favorites[] = $fav;
+                        }
+                        ?>
+
+                        <?php if (!empty($favorites)): ?>
+                            <div class="favorites-list">
+                                <?php foreach ($favorites as $fav): ?>
+                                    <a href="news.php?id=<?= $fav['id'] ?>" class="favorite-card">
+                                        <div class="favorite-cover">
+                                            <?php if ($fav['image']): ?>
+                                                <img src="<?= htmlspecialchars($fav['image']) ?>"
+                                                    alt="<?= htmlspecialchars($fav['title']) ?>">
+                                            <?php else: ?>
+                                                <div class="cover-placeholder">
+                                                    <i class="fas fa-newspaper"></i>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <?php if ($fav['game_name']): ?>
+                                                <div class="game-badge">
+                                                    <?php if ($fav['game_icon']): ?>
+                                                        <img src="<?= htmlspecialchars($fav['game_icon']) ?>"
+                                                            alt="<?= htmlspecialchars($fav['game_name']) ?>">
+                                                    <?php endif; ?>
+                                                    <span><?= htmlspecialchars($fav['game_name']) ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="favorite-info">
+                                            <h3><?= htmlspecialchars($fav['title']) ?></h3>
+
+                                            <?php if ($fav['short_description']): ?>
+                                                <p class="favorite-description"><?= htmlspecialchars($fav['short_description']) ?></p>
+                                            <?php endif; ?>
+
+                                            <div class="favorite-meta">
+                                                <div class="meta-author">
+                                                    <img src="<?= htmlspecialchars($fav['author_avatar']) ?>" alt="Автор">
+                                                    <span><?= htmlspecialchars($fav['author_login']) ?></span>
+                                                </div>
+                                                <span class="meta-date"><?= date('d.m.Y', strtotime($fav['created_at'])) ?></span>
+                                            </div>
+
+                                            <div class="favorite-stats">
+                                                <span class="stat-item">
+                                                    <i class="fas fa-heart"></i>
+                                                    <span><?= $fav['likes_count'] ?? 0 ?></span>
+                                                </span>
+                                                <span class="stat-item">
+                                                    <i class="fas fa-bookmark"></i>
+                                                    <span><?= $fav['favorites_count'] ?></span>
+                                                </span>
+                                                <span class="stat-item">
+                                                    <i class="fas fa-comment"></i>
+                                                    <span><?= $fav['comments_count'] ?></span>
+                                                </span>
+                                                <span class="stat-item">
+                                                    <i class="fas fa-eye"></i>
+                                                    <span><?= $fav['views'] ?></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-favorites">
+                                <i class="fas fa-bookmark"></i>
+                                <p>У вас пока нет избранных новостей</p>
+                                <a href="index.php" class="browse-btn">Перейти к новостям</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                    <?php
-                    unset($_SESSION['profile_message']);
-                    unset($_SESSION['profile_message_type']);
-                    ?>
+
+                <?php elseif ($current_tab === 'comments'): ?>
+                    <!-- ========================================== -->
+                    <!-- ВКЛАДКА КОММЕНТАРИЕВ -->
+                    <!-- ========================================== -->
+                    <div class="content-header">
+                        <h2><i class="fas fa-comments"></i> Мои комментарии</h2>
+                    </div>
+                    <div class="empty-tab">
+                        <i class="fas fa-comments"></i>
+                        <p>Раздел в разработке</p>
+                    </div>
+
+                <?php elseif ($current_tab === 'notifications'): ?>
+                    <!-- ========================================== -->
+                    <!-- ВКЛАДКА УВЕДОМЛЕНИЙ -->
+                    <!-- ========================================== -->
+                    <div class="content-header">
+                        <h2><i class="fas fa-bell"></i> Уведомления</h2>
+                    </div>
+                    <div class="empty-tab">
+                        <i class="fas fa-bell"></i>
+                        <p>Раздел в разработке</p>
+                    </div>
+                <?php else: ?>
                 <?php endif; ?>
-
-                <form action="assets/app/update_profile.php" method="POST" class="profile-form-wrapper">
-                    <div class="profile-form">
-                        <div class="form-group">
-                            <label for="login">Имя пользователя</label>
-                            <input type="text" id="login" name="login" value="<?= htmlspecialchars($user['login']) ?>"
-                                required minlength="6">
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Телефон</label>
-                            <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($user['phone']) ?>"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bio">О себе</label>
-                            <textarea id="bio" name="bio"
-                                rows="3"><?= htmlspecialchars($user['bio'] ?? '') ?></textarea>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="save-btn">
-                        <i class="fas fa-save"></i> Сохранить изменения
-                    </button>
-                </form>
             </div>
         </div>
     </main>
@@ -227,6 +415,7 @@ $_SESSION['avatar'] = $user['avatar'];
             </div>
         </div>
     </footer>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>

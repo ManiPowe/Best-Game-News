@@ -67,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (mysqli_stmt_execute($stmt)) {
             $success = "Новость успешно создана!";
-            mysqli_query($conn, "UPDATE users SET posts_count = posts_count + 1 WHERE id = $author_id");
         } else {
             $error = "Ошибка при сохранении: " . mysqli_error($conn);
         }
@@ -83,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Создать новость - Best Game News</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/create_news.css">
+        <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -246,6 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>

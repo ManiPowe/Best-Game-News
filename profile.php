@@ -57,6 +57,7 @@ if ($is_logged_in && !$is_own_profile) {
     <title>Профиль <?= htmlspecialchars($user['login']) ?> - Best Game News</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -109,23 +110,50 @@ if ($is_logged_in && !$is_own_profile) {
                     <div class="profile-layout">
                         <div class="profile-card">
                             <div class="profile-header">
-                                <div class="avatar">
-                                    <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
-                                        <i class="fas fa-user"></i>
-                                    <?php else: ?>
-                                        <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар">
-                                    <?php endif; ?>
+                                <div class="profile-header-left">
+                                    <div class="avatar">
+                                        <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
+                                            <i class="fas fa-user"></i>
+                                        <?php else: ?>
+                                            <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар"
+                                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                <div class="profile-info">
-                                    <h2><?= htmlspecialchars($user['login']) ?></h2>
-                                    <span class="creator-badge">
-                                        <i class="fas fa-star"></i> Создатель контента
-                                    </span>
-                                    <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
-                                    <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
-                                    <p><i class="fas fa-calendar"></i> Участник с
-                                        <?= date('d.m.Y', strtotime($user['created_at'])) ?>
-                                    </p>
+
+                                <div class="profile-header-center">
+                                    <div class="profile-info">
+                                        <h2><?= htmlspecialchars($user['login']) ?></h2>
+
+                                        <?php if ($user['role'] === 'creator' || $user['role'] === 'admin'): ?>
+                                            <div class="creator-badge">
+                                                <i class="fas fa-star"></i>
+                                                <span>Создатель контента</span>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
+                                        <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
+                                        <p><i class="fas fa-calendar"></i> Участник с
+                                            <?= date('d.m.Y', strtotime($user['created_at'])) ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="profile-header-right">
+                                    <div class="profile-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-value"><?= $posts_count ?? 0 ?></div>
+                                            <div class="stat-label">Посты</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value"><?= $total_likes ?? 0 ?></div>
+                                            <div class="stat-label">Лайки</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
+                                            <div class="stat-label">Комментарии</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -415,6 +443,7 @@ if ($is_logged_in && !$is_own_profile) {
             </div>
         </div>
     </footer>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>

@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/reg.css">  
+
     <link rel="icon" href="/assets/Media/Photo/asd.png">
     <title>Вход - Best Game News</title>
 </head>

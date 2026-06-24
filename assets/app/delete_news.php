@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$news_id = (int)$_POST['news_id'];
+$news_id = (int) $_POST['news_id'];
 
 $check_sql = "SELECT id, image FROM news WHERE id = ? AND author_id = ?";
 $stmt_check = mysqli_prepare($conn, $check_sql);
@@ -30,7 +30,7 @@ $stmt_delete = mysqli_prepare($conn, $delete_sql);
 mysqli_stmt_bind_param($stmt_delete, "i", $news_id);
 mysqli_stmt_execute($stmt_delete);
 
-mysqli_query($conn, "UPDATE users SET posts_count = posts_count - 1 WHERE id = $user_id AND posts_count > 0");
+mysqli_query($conn, "UPDATE users SET posts_count = GREATEST(posts_count - 1, 0) WHERE id = $user_id");
 
 header("Location: ../../profile.php?id=" . $user_id);
 exit;

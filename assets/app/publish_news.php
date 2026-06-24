@@ -22,10 +22,12 @@ if (!$news) {
 }
 
 if ($news['status'] === 'draft') {
-    $update_sql = "UPDATE news SET status = 'pending' WHERE id = ?";
+    $update_sql = "UPDATE news SET status = 'published' WHERE id = ?";
     $stmt_update = mysqli_prepare($conn, $update_sql);
     mysqli_stmt_bind_param($stmt_update, "i", $news_id);
     mysqli_stmt_execute($stmt_update);
+    
+    mysqli_query($conn, "UPDATE users SET posts_count = posts_count + 1 WHERE id = $user_id");
 }
 
 header("Location: ../../profile.php?id=" . $user_id);

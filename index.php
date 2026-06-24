@@ -9,12 +9,17 @@ require_once 'assets/app/db.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/light-theme.css">
     <link rel="icon" href="/assets/Media/Photo/asd.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Best Game News</title>
 </head>
 
 <body>
+    <script src="/assets/js/theme.js" defer></script>
+    <script src="/assets/js/news_actions.js"></script>
     <script src="/assets/JS/main_slider.js"></script>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -26,7 +31,7 @@ require_once 'assets/app/db.php';
             <nav class="nav">
                 <a href="index.php">Главная</a>
                 <a href="#">Игры</a>
-                <a href="">Новости</a>
+                <a href="#">Новости</a>
                 <a href="#">Статьи</a>
                 <a href="#">Видео</a>
                 <a href="#">Прохождения</a>
@@ -43,8 +48,7 @@ require_once 'assets/app/db.php';
 
                     if ($user_role === 'creator' || $user_role === 'admin'):
                         ?>
-                        <a href="create_news.php" class="create-news-btn"> Создать новость
-                        </a>
+                        <a href="create_news.php" class="create-news-btn"> Создать новость</a>
                     <?php endif; ?>
                 <?php endif; ?>
             </nav>
@@ -79,18 +83,20 @@ require_once 'assets/app/db.php';
                     <div class="popular-authors">
                         <h3>Популярные авторы</h3>
                         <?php
-                        require_once('assets/app/db.php');
-
-                        $sql = "SELECT id, login, avatar, posts_count, comments_count, top_liked_comment 
-                FROM users 
-                WHERE role IN ('creator', 'admin')
-                ORDER BY posts_count DESC 
-                LIMIT 10";
+                        $sql = "SELECT u.id, u.login, u.avatar, u.comments_count,
+                               (SELECT COUNT(*) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as posts_count,
+                               (SELECT MAX(n.likes_count) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as top_liked_post
+                        FROM users u
+                        WHERE u.role IN ('creator', 'admin')
+                        HAVING posts_count > 0
+                        ORDER BY posts_count DESC 
+                        LIMIT 10";
 
                         $result = mysqli_query($conn, $sql);
 
                         if ($result && mysqli_num_rows($result) > 0):
                             while ($author = mysqli_fetch_assoc($result)):
+                                $top_likes = $author['top_liked_post'] ?? 0;
                                 ?>
                                 <a href="profile.php?id=<?= $author['id'] ?>" class="author-card">
                                     <img src="<?= htmlspecialchars($author['avatar']) ?>"
@@ -100,7 +106,7 @@ require_once 'assets/app/db.php';
                                         <p>Постов: <?= $author['posts_count'] ?> | Комментариев:
                                             <?= $author['comments_count'] ?>
                                         </p>
-                                        <p>Самый залайканный комментарий: <?= $author['top_liked_comment'] ?> лайков</p>
+                                        <p>Самый залайканный пост: <?= $top_likes ?> лайков</p>
                                     </div>
                                 </a>
                                 <?php
@@ -111,6 +117,7 @@ require_once 'assets/app/db.php';
                         <?php endif; ?>
                     </div>
                 </div>
+
                 <div class="main-content">
                     <div class="hero-section">
                         <div class="hero-slider">
@@ -119,8 +126,7 @@ require_once 'assets/app/db.php';
                                     <img src="/assets/Media/Photo/dota2.png" loading="lazy" alt="DOTA 2">
                                     <div class="hero-text">
                                         <h2>DOTA 2</h2>
-                                        <p>В игре DOTA 2 стартовал новый ивент, приуроченный коллаборацией DOTA
-                                            2 X
+                                        <p>В игре DOTA 2 стартовал новый ивент, приуроченный коллаборацией DOTA 2 X
                                             Monster Hunter!</p>
                                         <a href="#">Подробнее...</a>
                                     </div>
@@ -130,8 +136,7 @@ require_once 'assets/app/db.php';
                                         alt="Atomic Heart">
                                     <div class="hero-text">
                                         <h2>Atomic Heart</h2>
-                                        <p>Mundfish показала парочку скриншотов грядущего дополнения DLC для
-                                            Atomic
+                                        <p>Mundfish показала парочку скриншотов грядущего дополнения DLC для Atomic
                                             Heart</p>
                                         <a href="#">Подробнее...</a>
                                     </div>
@@ -147,122 +152,117 @@ require_once 'assets/app/db.php';
                             </div>
                             <button class="slider-btn prev-btn" aria-label="Предыдущий слайд">&lt;</button>
                             <button class="slider-btn next-btn" aria-label="Следующий слайд">&gt;</button>
-                            <div class="slider-indicators">
-                            </div>
+                            <div class="slider-indicators"></div>
                         </div>
                     </div>
+
                     <div class="news-container">
                         <div class="section-header">
-                            <h2>Новости дня</h2>
-                        </div>
-                        <div class="news-list">
-                            <article>
-                                <img src="/assets/Media/Photo/atomic.jpg" alt="Atomic Heart">
-                                <div class="news-content">
-                                    <div class="content-main">
-                                        <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
-                                            Atomic
-                                            Heart</p>
-                                        <a href="#">Читать далее</a>
-                                    </div>
-                                    <div class="content-sidebar">
-                                        <div class="news-meta">
-                                            <div class="meta-item">
-                                                <span class="meta-label">Автор:</span>
-                                                <span class="meta-value">ManiPowe?</span>
-                                            </div>
-                                            <div class="meta-item">
-                                                <span class="meta-label">Опубликовано:</span>
-                                                <span class="meta-value">26.10.2025</span>
-                                            </div>
-                                        </div>
-                                        <div class="news-actions">
-                                            <div class="action-btn like-btn">
-                                                <img src="/assets/Media/Photo/icons8-лайк-с-заливкой-50.png"
-                                                    alt="Нравится">
-                                                <span class="action-count">17</span>
-                                            </div>
-                                            <div class="action-btn favorite-btn">
-                                                <img src="/assets/Media/Photo/icons8-звезда-50.png" alt="В избранное">
-                                                <span class="action-count">3</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
+                            <div class="todays-news">
+                                <h2>Новости дня</h2>
 
-                            <article>
-                                <img src="/assets/Media/Photo/atomic.jpg" alt="Atomic Heart">
-                                <div class="news-content">
-                                    <div class="content-main">
-                                        <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
-                                            Atomic
-                                            Heart</p>
-                                        <a href="#">Читать далее</a>
-                                    </div>
-                                    <div class="content-sidebar">
-                                        <div class="news-meta">
-                                            <div class="meta-item">
-                                                <span class="meta-label">Автор:</span>
-                                                <span class="meta-value">ManiPowe?</span>
-                                            </div>
-                                            <div class="meta-item">
-                                                <span class="meta-label">Опубликовано:</span>
-                                                <span class="meta-value">26.10.2025</span>
-                                            </div>
-                                        </div>
-                                        <div class="news-actions">
-                                            <div class="action-btn like-btn">
-                                                <img src="/assets/Media/Photo/icons8-лайк-с-заливкой-50.png"
-                                                    alt="Нравится">
-                                                <span class="action-count">17</span>
-                                            </div>
-                                            <div class="action-btn favorite-btn">
-                                                <img src="/assets/Media/Photo/icons8-звезда-50.png" alt="В избранное">
-                                                <span class="action-count">3</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
+                                <?php
+                                $user_id = $_SESSION['user_id'] ?? 0;
 
-                            <article>
-                                <img src="/assets/Media/Photo/atomic.jpg" alt="Atomic Heart">
-                                <div class="news-content">
-                                    <div class="content-main">
-                                        <h3>Atomic Heart</h3>
-                                        <p>Mundfish показала парочку скриншотов<br>грядущего дополнения DLC для
-                                            Atomic
-                                            Heart</p>
-                                        <a href="#">Читать далее</a>
+                                $today_sql = "SELECT n.id, n.title, n.short_description, n.image, n.category, n.game_id, 
+                 n.likes_count, n.views, n.created_at,
+                 u.login as author_login, u.avatar as author_avatar,
+                 g.name as game_name, g.icon as game_icon,
+                 (SELECT COUNT(*) FROM favorites WHERE news_id = n.id) as favorites_count,
+                 (SELECT COUNT(*) FROM news_likes WHERE news_id = n.id AND user_id = ?) as user_liked,
+                 (SELECT COUNT(*) FROM favorites WHERE news_id = n.id AND user_id = ?) as user_favorited
+          FROM news n
+          JOIN users u ON n.author_id = u.id
+          LEFT JOIN games g ON n.game_id = g.id
+          WHERE n.status = 'published' 
+            AND DATE(n.created_at) = CURDATE()
+          ORDER BY n.created_at DESC";
+
+                                $stmt = mysqli_prepare($conn, $today_sql);
+                                mysqli_stmt_bind_param($stmt, "ii", $user_id, $user_id);
+                                mysqli_stmt_execute($stmt);
+                                $today_result = mysqli_stmt_get_result($stmt);
+
+                                if ($today_result && mysqli_num_rows($today_result) > 0): ?>
+                                    <div class="todays-news-list">
+                                        <?php while ($news = mysqli_fetch_assoc($today_result)): ?>
+                                            <article class="todays-card"
+                                                onclick="window.location.href='news.php?id=<?= $news['id'] ?>'"
+                                                style="cursor: pointer;">
+                                                <div class="todays-image">
+                                                    <?php if ($news['image']): ?>
+                                                        <img src="<?= htmlspecialchars($news['image']) ?>"
+                                                            alt="<?= htmlspecialchars($news['title']) ?>">
+                                                    <?php else: ?>
+                                                        <div class="todays-image-placeholder">
+                                                            <i class="fas fa-newspaper"></i>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if ($news['game_name']): ?>
+                                                        <div class="game-badge">
+                                                            <?php if ($news['game_icon']): ?>
+                                                                <img src="<?= htmlspecialchars($news['game_icon']) ?>"
+                                                                    alt="<?= htmlspecialchars($news['game_name']) ?>">
+                                                            <?php endif; ?>
+                                                            <span><?= htmlspecialchars($news['game_name']) ?></span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="todays-content">
+                                                    <h3 class="todays-title"><?= htmlspecialchars($news['title']) ?></h3>
+
+                                                    <?php if ($news['short_description']): ?>
+                                                        <p class="todays-description">
+                                                            <?= htmlspecialchars($news['short_description']) ?>
+                                                        </p>
+                                                    <?php endif; ?>
+
+                                                    <div class="todays-meta">
+                                                        <div class="todays-author">
+                                                            <img src="<?= htmlspecialchars($news['author_avatar']) ?>"
+                                                                alt="Автор">
+                                                            <span>Автор: <?= htmlspecialchars($news['author_login']) ?></span>
+                                                        </div>
+                                                        <span class="todays-date">
+                                                            Опубликовано: <?= date('d.m.Y', strtotime($news['created_at'])) ?>
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="todays-actions">
+                                                        <a href="news.php?id=<?= $news['id'] ?>" class="read-more"
+                                                            onclick="event.stopPropagation()">Читать далее</a>
+                                                        <div class="todays-stats">
+                                                            <button
+                                                                class="stat-btn like-btn <?= $news['user_liked'] ? 'active' : '' ?>"
+                                                                onclick="event.stopPropagation(); toggleLike(<?= $news['id'] ?>, this)">
+                                                                <i class="fas fa-heart"></i>
+                                                                <span><?= $news['likes_count'] ?? 0 ?></span>
+                                                            </button>
+                                                            <button
+                                                                class="stat-btn favorite-btn <?= $news['user_favorited'] ? 'active' : '' ?>"
+                                                                onclick="event.stopPropagation(); toggleFavorite(<?= $news['id'] ?>, this)">
+                                                                <i class="fas fa-bookmark"></i>
+                                                                <span><?= $news['favorites_count'] ?? 0 ?></span>
+                                                            </button>
+                                                            <span class="stat">
+                                                                <i class="fas fa-eye"></i>
+                                                                <span><?= $news['views'] ?></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        <?php endwhile; ?>
                                     </div>
-                                    <div class="content-sidebar">
-                                        <div class="news-meta">
-                                            <div class="meta-item">
-                                                <span class="meta-label">Автор:</span>
-                                                <span class="meta-value">ManiPowe?</span>
-                                            </div>
-                                            <div class="meta-item">
-                                                <span class="meta-label">Опубликовано:</span>
-                                                <span class="meta-value">26.10.2025</span>
-                                            </div>
-                                        </div>
-                                        <div class="news-actions">
-                                            <div class="action-btn like-btn">
-                                                <img src="/assets/Media/Photo/icons8-лайк-с-заливкой-50.png"
-                                                    alt="Нравится">
-                                                <span class="action-count">17</span>
-                                            </div>
-                                            <div class="action-btn favorite-btn">
-                                                <img src="/assets/Media/Photo/icons8-звезда-50.png" alt="В избранное">
-                                                <span class="action-count">3</span>
-                                            </div>
-                                        </div>
+                                <?php else: ?>
+                                    <div class="empty-news">
+                                        <i class="fas fa-newspaper"></i>
+                                        <p>Сегодня новостей ещё нет. Загляните позже!</p>
                                     </div>
-                                </div>
-                            </article>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -357,7 +357,6 @@ require_once 'assets/app/db.php';
             </div>
         </div>
     </main>
-
 
     <footer>
         <div class="footer">

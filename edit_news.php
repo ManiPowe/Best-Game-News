@@ -115,6 +115,7 @@ while ($game = mysqli_fetch_assoc($games_result)) {
     <title>Редактировать новость - Best Game News</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/create_news.css">
+        <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -294,23 +295,8 @@ while ($game = mysqli_fetch_assoc($games_result)) {
             </div>
         </div>
     </footer>
-
-    <script>
-        function toggleGameSelect() {
-            const category = document.getElementById('category').value;
-            const gameSelectGroup = document.getElementById('game-select-group');
-            const gameIdSelect = document.getElementById('game_id');
-
-            if (category === 'games') {
-                gameSelectGroup.style.display = 'block';
-                gameIdSelect.required = true;
-            } else {
-                gameSelectGroup.style.display = 'none';
-                gameIdSelect.required = false;
-                gameIdSelect.value = '';
-            }
-        }
-    </script>
+    <script src="/assets/js/game-edit-news"></script>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>
