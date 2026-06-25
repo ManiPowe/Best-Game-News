@@ -6,7 +6,7 @@ require_once 'assets/app/notifications.php';
 $unread_count = getUnreadCount($conn, $user_id);
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: /login");
     exit;
 }
 
@@ -21,7 +21,7 @@ $user = mysqli_fetch_assoc($result);
 
 if (!$user) {
     session_destroy();
-    header("Location: login.php");
+    header("Location: /login");
     exit;
 }
 
@@ -60,7 +60,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
     <link rel="stylesheet" href="css/cab.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
@@ -94,12 +94,12 @@ $current_tab = $_GET['tab'] ?? 'settings';
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -123,12 +123,12 @@ $current_tab = $_GET['tab'] ?? 'settings';
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -143,7 +143,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
         <div class="dashboard">
             <aside class="sidebar">
                 <h3>Мой аккаунт</h3>
-                <a href="profile.php?id=<?= $user_id ?>" class="menu-item">
+                <a href="/profile/<?= $user_id ?>" class="menu-item">
                     <i class="fas fa-user"></i>
                     <span>Мой профиль</span>
                 </a>
@@ -586,6 +586,12 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                                     break;
                                                 case 'post_deleted':
                                                     echo '<i class="fas fa-trash" style="color: #ff9800;"></i>';
+                                                    break;
+                                                case 'ticket_reply':
+                                                    echo '<i class="fas fa-reply" style="color: #2196F3;"></i>';
+                                                    break;
+                                                case 'ticket_closed':
+                                                    echo '<i class="fas fa-lock" style="color: #9e9e9e;"></i>';
                                                     break;
                                                 case 'warning':
                                                     echo '<i class="fas fa-exclamation-triangle" style="color: #ff9800;"></i>';

@@ -70,7 +70,7 @@ if ($query !== '') {
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
     <script src="/assets/js/theme-init.js"></script>
 </head>
 
@@ -85,12 +85,12 @@ if ($query !== '') {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -114,12 +114,12 @@ if ($query !== '') {
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -160,7 +160,7 @@ if ($query !== '') {
                                                 alt="<?= htmlspecialchars($news['title']) ?>">
 
                                             <?php if ($news['game_name']): ?>
-                                                <a href="category.php?type=games&game_id=<?= $news['game_id'] ?>&sort=new"
+                                                <a href="/category/games&game_id=<?= $news['game_id'] ?>&sort=new"
                                                     class="game-badge-overlay">
                                                     <?php if ($news['game_icon']): ?>
                                                         <img src="<?= htmlspecialchars($news['game_icon']) ?>" alt="">
@@ -200,7 +200,7 @@ if ($query !== '') {
                             <h2><i class="fas fa-users"></i> Авторы (<?= mysqli_num_rows($results['users']) ?>)</h2>
                             <div class="search-results-grid">
                                 <?php while ($user = mysqli_fetch_assoc($results['users'])): ?>
-                                    <a href="profile.php?id=<?= $user['id'] ?>" class="result-card user-card">
+                                    <a href="/profile/<?= $user['id'] ?>" class="result-card user-card">
                                         <img src="<?= htmlspecialchars($user['avatar']) ?>"
                                             alt="<?= htmlspecialchars($user['login']) ?>">
                                         <div class="result-info">
@@ -220,7 +220,7 @@ if ($query !== '') {
                             <h2><i class="fas fa-gamepad"></i> Игры (<?= mysqli_num_rows($results['games']) ?>)</h2>
                             <div class="search-results-grid">
                                 <?php while ($game = mysqli_fetch_assoc($results['games'])): ?>
-                                    <a href="category.php?type=games&game_id=<?= $game['id'] ?>&sort=new"
+                                    <a href="/category/games&game_id=<?= $game['id'] ?>&sort=new"
                                         class="result-card game-card">
                                         <?php if ($game['icon']): ?>
                                             <img src="<?= htmlspecialchars($game['icon']) ?>"

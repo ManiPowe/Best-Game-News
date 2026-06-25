@@ -3,7 +3,7 @@ session_start();
 require_once 'db.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../login.php");
+    header("Location: ../..//login");
     exit;
 }
 
@@ -30,6 +30,6 @@ if ($news['status'] === 'draft') {
     mysqli_query($conn, "UPDATE users SET posts_count = posts_count + 1 WHERE id = $user_id");
 }
 
-header("Location: ../../profile.php?id=" . $user_id);
+header("Location: ../..//profile/" . $user_id);
 exit;
 ?>

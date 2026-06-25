@@ -1,6 +1,6 @@
 function redirectToLogin() {
     sessionStorage.setItem('redirect_after_login', window.location.href);
-    window.location.href = '/login.php?error=need_auth';
+    window.location.href = '//login?error=need_auth';
 }
 
 document.addEventListener('DOMContentLoaded', function () {

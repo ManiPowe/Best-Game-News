@@ -3,7 +3,7 @@ session_start();
 require_once 'db.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../login.php");
+    header("Location: ../..//login");
     exit;
 }
 
@@ -53,6 +53,6 @@ mysqli_stmt_execute($stmt_delete);
 mysqli_query($conn, "UPDATE users SET posts_count = GREATEST(posts_count - 1, 0) WHERE id = " . (int)$news['author_id']);
 
 // Редирект в профиль автора новости
-header("Location: ../../profile.php?id=" . $news['author_id']);
+header("Location: ../..//profile/" . $news['author_id']);
 exit;
 ?>

@@ -11,7 +11,7 @@ require_once 'assets/app/db.php';
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="icon" href="/assets/Media/Photo/asd.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
     <title>Best Game News</title>
 </head>
 
@@ -49,12 +49,12 @@ require_once 'assets/app/db.php';
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -84,7 +84,7 @@ require_once 'assets/app/db.php';
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <div class="header-notifications">
-                            <a href="cab.php?tab=notifications" class="notification-bell">
+                            <a href="/cab?tab=notifications" class="notification-bell">
                                 <i class="fas fa-bell"></i>
                                 <?php if ($unread_count > 0): ?>
                                     <span class="notification-badge"><?= $unread_count ?></span>
@@ -92,12 +92,12 @@ require_once 'assets/app/db.php';
                             </a>
                         </div>
 
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -130,7 +130,7 @@ require_once 'assets/app/db.php';
                             while ($author = mysqli_fetch_assoc($result)):
                                 $top_likes = $author['top_liked_post'] ?? 0;
                                 ?>
-                                <a href="profile.php?id=<?= $author['id'] ?>" class="author-card">
+                                <a href="/profile/<?= $author['id'] ?>" class="author-card">
                                     <img src="<?= htmlspecialchars($author['avatar']) ?>"
                                         alt="Фото <?= htmlspecialchars($author['login']) ?>">
                                     <div class="author-info">
@@ -340,7 +340,7 @@ require_once 'assets/app/db.php';
                                 if ($popular_games_result && mysqli_num_rows($popular_games_result) > 0):
                                     while ($game = mysqli_fetch_assoc($popular_games_result)):
                                         ?>
-                                        <a href="category.php?type=games&game_id=<?= $game['id'] ?>" class="marquee-item">
+                                        <a href="/category/games&game_id=<?= $game['id'] ?>" class="marquee-item">
                                             <span class="game-name"><?= htmlspecialchars($game['name']) ?></span>
                                             <?php if ($game['icon']): ?>
                                                 <img class="game-icon" src="<?= htmlspecialchars($game['icon']) ?>"

@@ -3,7 +3,7 @@ session_start();
 require_once 'assets/app/db.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: /login");
     exit;
 }
 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/create_news.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
@@ -118,12 +118,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -147,12 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>

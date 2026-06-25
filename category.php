@@ -106,10 +106,10 @@ $result = mysqli_stmt_get_result($stmt);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $page_title ?> - Best Game News</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
@@ -120,19 +120,19 @@ $result = mysqli_stmt_get_result($stmt);
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/index.php">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -156,12 +156,27 @@ $result = mysqli_stmt_get_result($stmt);
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                        <div class="header-notifications">
+                            <a href="/cab?tab=notifications" class="notification-bell">
+                                <i class="fas fa-bell"></i>
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="notification-badge"><?= $unread_count ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
+                        <a href="/cab" class="user-avatar-link">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>" alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -195,14 +210,14 @@ $result = mysqli_stmt_get_result($stmt);
 
                 <?php if ($type == 'games' && mysqli_num_rows($games_list_result) > 0): ?>
                     <div class="games-filter">
-                        <a href="?type=games&sort=<?= $sort ?>" class="filter-btn <?= $game_id == 0 ? 'active' : '' ?>">
+                        <a href="/category/games?sort=<?= $sort ?>" class="filter-btn <?= $game_id == 0 ? 'active' : '' ?>">
                             Все игры
                         </a>
                         <?php
                         mysqli_data_seek($games_list_result, 0);
                         while ($game = mysqli_fetch_assoc($games_list_result)):
                             ?>
-                            <a href="?type=games&game_id=<?= $game['id'] ?>&sort=<?= $sort ?>"
+                            <a href="/category/games/<?= $game['id'] ?>?sort=<?= $sort ?>"
                                 class="filter-btn <?= $game_id == $game['id'] ? 'active' : '' ?>">
                                 <?php if ($game['icon']): ?>
                                     <img src="<?= htmlspecialchars($game['icon']) ?>" alt="<?= htmlspecialchars($game['name']) ?>">
@@ -217,10 +232,18 @@ $result = mysqli_stmt_get_result($stmt);
                     <div class="news-grid">
                         <?php while ($news = mysqli_fetch_assoc($result)): ?>
                             <div class="news-card">
-                                <a href="news.php?id=<?= $news['id'] ?>" class="news-image-wrap">
+                                <a href="/news/<?= $news['id'] ?>" class="news-image-wrap">
                                     <?php
                                     $image_path = $news['image'] ?? '';
-                                    $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
+
+                                    // Делаем путь абсолютным (начинается с /)
+                                    if ($image_path && strpos($image_path, 'http') !== 0 && strpos($image_path, '/') !== 0) {
+                                        $image_path = '/' . $image_path;
+                                    }
+
+                                    // Проверяем существование файла
+                                    $file_path = $_SERVER['DOCUMENT_ROOT'] . $image_path;
+                                    $image_exists = $image_path && file_exists($file_path);
                                     $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
                                     ?>
                                     <img src="<?= htmlspecialchars($display_image) ?>"
@@ -228,8 +251,14 @@ $result = mysqli_stmt_get_result($stmt);
 
                                     <?php if ($news['game_name']): ?>
                                         <div class="game-badge-overlay">
-                                            <?php if ($news['game_icon']): ?>
-                                                <img src="<?= htmlspecialchars($news['game_icon']) ?>"
+                                            <?php
+                                            $game_icon_path = $news['game_icon'] ?? '';
+                                            if ($game_icon_path && strpos($game_icon_path, 'http') !== 0 && strpos($game_icon_path, '/') !== 0) {
+                                                $game_icon_path = '/' . $game_icon_path;
+                                            }
+                                            ?>
+                                            <?php if ($game_icon_path): ?>
+                                                <img src="<?= htmlspecialchars($game_icon_path) ?>"
                                                     alt="<?= htmlspecialchars($news['game_name']) ?>">
                                             <?php endif; ?>
                                             <span><?= htmlspecialchars($news['game_name']) ?></span>
@@ -238,8 +267,7 @@ $result = mysqli_stmt_get_result($stmt);
                                 </a>
 
                                 <div class="news-content">
-                                    <h3><a href="news.php?id=<?= $news['id'] ?>"><?= htmlspecialchars($news['title']) ?></a>
-                                    </h3>
+                                    <h3><a href="/news/<?= $news['id'] ?>"><?= htmlspecialchars($news['title']) ?></a></h3>
 
                                     <p class="news-desc">
                                         <?= htmlspecialchars(mb_substr($news['short_description'] ?? $news['content'], 0, 150)) ?>...
@@ -247,7 +275,13 @@ $result = mysqli_stmt_get_result($stmt);
 
                                     <div class="news-footer">
                                         <div class="news-author">
-                                            <img src="<?= htmlspecialchars($news['author_avatar']) ?>"
+                                            <?php
+                                            $author_avatar = $news['author_avatar'] ?? '';
+                                            if ($author_avatar && strpos($author_avatar, 'http') !== 0 && strpos($author_avatar, '/') !== 0) {
+                                                $author_avatar = '/' . $author_avatar;
+                                            }
+                                            ?>
+                                            <img src="<?= htmlspecialchars($author_avatar ?: '/assets/Media/Photo/man.png') ?>"
                                                 alt="<?= htmlspecialchars($news['author_login']) ?>" class="author-avatar">
                                             <span><?= htmlspecialchars($news['author_login']) ?></span>
                                         </div>

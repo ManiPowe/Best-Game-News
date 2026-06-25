@@ -62,7 +62,7 @@ $users_result = mysqli_stmt_get_result($stmt);
                     <tr>
                         <td>
                             <div class="user-cell">
-                                <a href="../profile.php?id=<?= $user['id'] ?>" class="user-profile-link">
+                                <a href="..//profile/<?= $user['id'] ?>" class="user-profile-link">
                                     <img src="../<?= htmlspecialchars($user['avatar']) ?>"
                                         alt="<?= htmlspecialchars($user['login']) ?>"
                                         onerror="this.src='../assets/Media/Photo/man.png'">

@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteBase /
+
+# Разрешаем статику
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^assets/ - [L]
+RewriteRule ^css/ - [L]
+RewriteRule ^admin/ - [L]
+
+# Все остальные запросы → routes.php
+RewriteRule ^ routes.php [L]

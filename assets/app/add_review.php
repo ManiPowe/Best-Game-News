@@ -33,7 +33,7 @@ if (!$target_user) {
 
 if (!empty($errors)) {
     $_SESSION['review_error'] = implode('<br>', $errors);
-    header("Location: ../../profile.php?id=" . $target_user_id);
+    header("Location: ../..//profile/" . $target_user_id);
     exit;
 }
 
@@ -45,7 +45,7 @@ mysqli_stmt_store_result($stmt_duplicate);
 
 if (mysqli_stmt_num_rows($stmt_duplicate) > 0) {
     $_SESSION['review_error'] = "Вы уже оставляли отзыв этому пользователю!";
-    header("Location: ../../profile.php?id=" . $target_user_id);
+    header("Location: ../..//profile/" . $target_user_id);
     exit;
 }
 
@@ -56,11 +56,11 @@ mysqli_stmt_bind_param($stmt_insert, "iis", $author_id, $target_user_id, $review
 if (mysqli_stmt_execute($stmt_insert)) {
     
     $_SESSION['review_success'] = "Отзыв успешно добавлен!";
-    header("Location: ../../profile.php?id=" . $target_user_id);
+    header("Location: ../..//profile/" . $target_user_id);
     exit;
 } else {
     $_SESSION['review_error'] = "Ошибка при добавлении отзыва: " . mysqli_error($conn);
-    header("Location: ../../profile.php?id=" . $target_user_id);
+    header("Location: ../..//profile/" . $target_user_id);
     exit;
 }
 ?>

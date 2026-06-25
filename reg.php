@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="login.php">Вход</a>
+                <a href="/login">Вход</a>
             </nav>
         </div>
     </header>
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit" class="submit-btn">Зарегистрироваться</button>
                 </form>
-                <p class="auth-link">Уже есть аккаунт? <a href="login.php">Войти</a></p>
+                <p class="auth-link">Уже есть аккаунт? <a href="/login">Войти</a></p>
             </div>
         </div>
     </main>

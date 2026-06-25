@@ -6,7 +6,7 @@ require_once 'db.php';
 // ШАГ 1: ПРОВЕРКА АВТОРИЗАЦИИ
 // ==========================================
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../login.php");
+    header("Location: ../..//login");
     exit;
 }
 
@@ -47,7 +47,7 @@ if (!preg_match('/^[\d\s\+\-\(\)]+$/', $new_phone)) {
 if (!empty($errors)) {
     $_SESSION['profile_message'] = implode('<br>', $errors);
     $_SESSION['profile_message_type'] = 'error';
-    header("Location: ../../cab.php");
+    header("Location: ../..//cab");
     exit;
 }
 
@@ -65,7 +65,7 @@ mysqli_stmt_store_result($stmt_check);
 if (mysqli_stmt_num_rows($stmt_check) > 0) {
     $_SESSION['profile_message'] = "Этот логин или email уже используется другим пользователем!";
     $_SESSION['profile_message_type'] = 'error';
-    header("Location: ../../cab.php");
+    header("Location: ../..//cab");
     exit;
 }
 
@@ -84,12 +84,12 @@ if (mysqli_stmt_execute($stmt_update)) {
     $_SESSION['profile_message'] = "Профиль успешно обновлён!";
     $_SESSION['profile_message_type'] = 'success';
     
-    header("Location: ../../cab.php");
+    header("Location: ../..//cab");
     exit;
 } else {
     $_SESSION['profile_message'] = "Ошибка при сохранении: " . mysqli_error($conn);
     $_SESSION['profile_message_type'] = 'error';
-    header("Location: ../../cab.php");
+    header("Location: ../..//cab");
     exit;
 }
 ?>

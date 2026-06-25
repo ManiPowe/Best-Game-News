@@ -33,19 +33,16 @@ $stats = [
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/cab.css">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin-support.css">
     <link rel="stylesheet" href="../css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
     <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    // Получаем роль пользователя из БД
     $user_role = null;
     if (isset($_SESSION['user_id'])) {
         $role_sql = "SELECT role FROM users WHERE id = ?";
@@ -67,15 +64,15 @@ $stats = [
             </div>
             <nav class="nav">
                 <a href="../index.php">Главная</a>
-                <a href="../category.php?type=games">Игры</a>
-                <a href="../category.php?type=news">Новости</a>
-                <a href="../category.php?type=articles">Статьи</a>
-                <a href="../category.php?type=videos">Видео</a>
-                <a href="../category.php?type=walkthroughs">Прохождения</a>
-                <a href="../help.php">Помощь</a>
+                <a href="..//category/games">Игры</a>
+                <a href="..//category/news">Новости</a>
+                <a href="..//category/articles">Статьи</a>
+                <a href="..//category/videos">Видео</a>
+                <a href="..//category/walkthroughs">Прохождения</a>
+                <a href="..//help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
@@ -114,12 +111,12 @@ $stats = [
                             $avatar_path = '../' . $avatar_path;
                         }
                         ?>
-                        <a href="../profile.php?id=<?= $_SESSION['user_id'] ?>" class="user-avatar-link">
+                        <a href="..//profile/<?= $_SESSION['user_id'] ?>" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Профиль" class="header-avatar"
                                 onerror="this.src='../assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
-                        <a href="../login.php">
+                        <a href="..//login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="../assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -157,13 +154,18 @@ $stats = [
                         </a>
                     <?php endif; ?>
 
+                    <a href="?tab=support" class="menu-item <?= $active_tab === 'support' ? 'active' : '' ?>">
+                        <i class="fas fa-life-ring"></i> Поддержка
+                        
+                    </a>
+
                     <?php if (in_array($user_role, ['admin', 'moderator'])): ?>
                         <a href="?tab=featured" class="menu-item <?= $active_tab === 'featured' ? 'active' : '' ?>">
                             <i class="fas fa-star"></i> Новости недели
                         </a>
                     <?php endif; ?>
 
-                    <a href="../cab.php" class="menu-item">
+                    <a href="..//cab" class="menu-item">
                         <i class="fas fa-arrow-left"></i> Вернуться в кабинет
                     </a>
                 </div>
@@ -179,6 +181,7 @@ $stats = [
                         echo '<h2>Вкладка не найдена</h2>';
                     }
                     ?>
+                    
                 </div>
             </div>
         </div>
@@ -214,6 +217,7 @@ $stats = [
             </div>
         </div>
     </footer>
+    <script src="../assets/js/no-cache.js"></script>
     <script src="../assets/js/theme.js"></script>
 </body>
 

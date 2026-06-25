@@ -3,7 +3,7 @@ session_start();
 require_once '../assets/app/db.php';
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+    header("Location: ..//login");
     exit;
 }
 

@@ -587,6 +587,73 @@ body.light-theme {
     border: 1px solid #e0e0e0 !important;
 }
 
+.light-theme .help-header{
+    background-color: white;
+}
+
+/* ==========================================
+   ПОДДЕРЖКА - СВЕТЛАЯ ТЕМА
+   ========================================== */
+.light-theme .stat-card,
+.light-theme .ticket-admin-card,
+.light-theme .ticket-view-header,
+.light-theme .messages-section,
+.light-theme .ticket-actions-section {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .message-card {
+    background: #f0f0f0 !important;
+}
+
+.light-theme .message-card.admin-message {
+    background: rgba(223, 27, 27, 0.05) !important;
+}
+
+.light-theme .ticket-admin-title,
+.light-theme .ticket-subject,
+.light-theme .ticket-user-info strong,
+.light-theme .message-author strong,
+.light-theme .message-text,
+.light-theme .reply-form h3 {
+    color: #1a1a1a !important;
+}
+
+.light-theme .reply-form textarea {
+    background: #f0f0f0 !important;
+    border-color: #e0e0e0 !important;
+    color: #333 !important;
+}
+
+/* Тикет в светлой теме */
+.light-theme .ticket-header-info,
+.light-theme .messages-section,
+.light-theme .reply-section {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .message-card {
+    background: #f0f0f0 !important;
+}
+
+.light-theme .message-card.admin-message {
+    background: rgba(223, 27, 27, 0.05) !important;
+}
+
+.light-theme .message-author strong,
+.light-theme .message-text,
+.light-theme .ticket-meta-info h2 {
+    color: #333 !important;
+}
+
+.light-theme .reply-form textarea {
+    background: #f0f0f0 !important;
+    border-color: #e0e0e0 !important;
+    color: #333 !important;
+}
+
 /* Модальное отклонения в светлой теме */
 .light-theme .reject-modal-content {
     background: #ffffff !important;

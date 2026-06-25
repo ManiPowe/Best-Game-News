@@ -38,6 +38,7 @@ while ($review = mysqli_fetch_assoc($result_reviews)) {
     $reviews[] = $review;
 }
 
+// === ПРОВЕРКА ОТЗЫВА (только для залогиненных, смотрящих чужой профиль) ===
 $has_reviewed = false;
 if ($is_logged_in && !$is_own_profile) {
     $sql_check = "SELECT id FROM profile_reviews WHERE author_id = ? AND target_user_id = ?";
@@ -46,40 +47,41 @@ if ($is_logged_in && !$is_own_profile) {
     mysqli_stmt_execute($stmt_check);
     mysqli_stmt_store_result($stmt_check);
     $has_reviewed = (mysqli_stmt_num_rows($stmt_check) > 0);
-    // === СТАТИСТИКА ПОЛЬЗОВАТЕЛЯ ===
-
-    // Количество постов (опубликованных)
-    $posts_count_sql = "SELECT COUNT(*) as count FROM news WHERE author_id = ? AND status = 'published'";
-    $posts_count_stmt = mysqli_prepare($conn, $posts_count_sql);
-    mysqli_stmt_bind_param($posts_count_stmt, "i", $target_user_id);
-    mysqli_stmt_execute($posts_count_stmt);
-    $posts_result = mysqli_stmt_get_result($posts_count_stmt);
-    $posts_count = $posts_result ? (mysqli_fetch_assoc($posts_result)['count'] ?? 0) : 0;
-
-    // Количество лайков (сумма всех лайков на постах пользователя)
-    $likes_count_sql = "SELECT COALESCE(SUM(likes_count), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
-    $likes_count_stmt = mysqli_prepare($conn, $likes_count_sql);
-    mysqli_stmt_bind_param($likes_count_stmt, "i", $target_user_id);
-    mysqli_stmt_execute($likes_count_stmt);
-    $likes_result = mysqli_stmt_get_result($likes_count_stmt);
-    $likes_count = $likes_result ? (mysqli_fetch_assoc($likes_result)['count'] ?? 0) : 0;
-
-    // Количество комментариев пользователя
-    $comments_count_sql = "SELECT COUNT(*) as count FROM comments WHERE user_id = ?";
-    $comments_count_stmt = mysqli_prepare($conn, $comments_count_sql);
-    mysqli_stmt_bind_param($comments_count_stmt, "i", $target_user_id);
-    mysqli_stmt_execute($comments_count_stmt);
-    $comments_result = mysqli_stmt_get_result($comments_count_stmt);
-    $comments_count = $comments_result ? (mysqli_fetch_assoc($comments_result)['count'] ?? 0) : 0;
-
-    // Количество просмотров (сумма просмотров всех постов)
-    $views_count_sql = "SELECT COALESCE(SUM(views), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
-    $views_count_stmt = mysqli_prepare($conn, $views_count_sql);
-    mysqli_stmt_bind_param($views_count_stmt, "i", $target_user_id);
-    mysqli_stmt_execute($views_count_stmt);
-    $views_result = mysqli_stmt_get_result($views_count_stmt);
-    $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0) : 0;
 }
+
+// === СТАТИСТИКА ПОЛЬЗОВАТЕЛЯ (всегда считаем, для всех) ===
+
+// Количество постов (опубликованных)
+$posts_count_sql = "SELECT COUNT(*) as count FROM news WHERE author_id = ? AND status = 'published'";
+$posts_count_stmt = mysqli_prepare($conn, $posts_count_sql);
+mysqli_stmt_bind_param($posts_count_stmt, "i", $target_user_id);
+mysqli_stmt_execute($posts_count_stmt);
+$posts_result = mysqli_stmt_get_result($posts_count_stmt);
+$posts_count = $posts_result ? (mysqli_fetch_assoc($posts_result)['count'] ?? 0) : 0;
+
+// Количество лайков (сумма всех лайков на постах пользователя)
+$likes_count_sql = "SELECT COALESCE(SUM(likes_count), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
+$likes_count_stmt = mysqli_prepare($conn, $likes_count_sql);
+mysqli_stmt_bind_param($likes_count_stmt, "i", $target_user_id);
+mysqli_stmt_execute($likes_count_stmt);
+$likes_result = mysqli_stmt_get_result($likes_count_stmt);
+$likes_count = $likes_result ? (mysqli_fetch_assoc($likes_result)['count'] ?? 0) : 0;
+
+// Количество комментариев пользователя
+$comments_count_sql = "SELECT COUNT(*) as count FROM comments WHERE user_id = ?";
+$comments_count_stmt = mysqli_prepare($conn, $comments_count_sql);
+mysqli_stmt_bind_param($comments_count_stmt, "i", $target_user_id);
+mysqli_stmt_execute($comments_count_stmt);
+$comments_result = mysqli_stmt_get_result($comments_count_stmt);
+$comments_count = $comments_result ? (mysqli_fetch_assoc($comments_result)['count'] ?? 0) : 0;
+
+// Количество просмотров (сумма просмотров всех постов)
+$views_count_sql = "SELECT COALESCE(SUM(views), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
+$views_count_stmt = mysqli_prepare($conn, $views_count_sql);
+mysqli_stmt_bind_param($views_count_stmt, "i", $target_user_id);
+mysqli_stmt_execute($views_count_stmt);
+$views_result = mysqli_stmt_get_result($views_count_stmt);
+$views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -92,7 +94,7 @@ if ($is_logged_in && !$is_own_profile) {
     <link rel="stylesheet" href="css/profile.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
@@ -125,12 +127,12 @@ if ($is_logged_in && !$is_own_profile) {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user['role'] === 'moderator' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -154,12 +156,12 @@ if ($is_logged_in && !$is_own_profile) {
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -420,8 +422,8 @@ if ($is_logged_in && !$is_own_profile) {
                             </form>
                         <?php elseif (!$is_logged_in): ?>
                             <div class="auth-prompt">
-                                <p>Хотите оставить отзыв? <a href="login.php">Войдите</a> или <a
-                                        href="reg.php">зарегистрируйтесь</a>!</p>
+                                <p>Хотите оставить отзыв? <a href="/login">Войдите</a> или <a
+                                        href="/reg">зарегистрируйтесь</a>!</p>
                             </div>
                         <?php elseif ($is_own_profile): ?>
                             <p class="self-note">Вы не можете оставлять отзывы самому себе.</p>
@@ -437,7 +439,7 @@ if ($is_logged_in && !$is_own_profile) {
                                             <img src="<?= htmlspecialchars($review['author_avatar']) ?>" alt="Аватар"
                                                 class="review-avatar">
                                             <div class="review-author">
-                                                <a href="profile.php?id=<?= $review['author_id'] ?>" class="review-author-name">
+                                                <a href="/profile/<?= $review['author_id'] ?>" class="review-author-name">
                                                     <?= htmlspecialchars($review['author_login']) ?>
                                                 </a>
                                                 <span

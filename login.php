@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="reg.php">Регистрация</a>
+                <a href="/reg">Регистрация</a>
             </nav>
         </div>
     </header>
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;">
                         <?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
-                <form class="auth-form" method="POST" action="login.php">
+                <form class="auth-form" method="POST" action="/login">
                     <div class="form-group">
                         <label for="login-username">Имя пользователя или Email</label>
                         <input type="text" id="login-username" name="login_input" required>
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit" class="submit-btn">Войти</button>
                 </form>
-                <p class="auth-link">Нет аккаунта? <a href="reg.php">Зарегистрироваться</a></p>
+                <p class="auth-link">Нет аккаунта? <a href="/reg">Зарегистрироваться</a></p>
             </div>
         </div>
     </main>

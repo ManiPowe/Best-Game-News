@@ -96,7 +96,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <link rel="stylesheet" href="css/news.css">
     <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
 
 <body>
@@ -129,12 +129,12 @@ $is_logged_in = isset($_SESSION['user_id']);
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="category.php?type=games">Игры</a>
-                <a href="category.php?type=news">Новости</a>
-                <a href="category.php?type=articles">Статьи</a>
-                <a href="category.php?type=videos">Видео</a>
-                <a href="category.php?type=walkthroughs">Прохождения</a>
-                <a href="help.php">Помощь</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
                     <a href="admin/admin.php" class="admin-link">
@@ -158,12 +158,12 @@ $is_logged_in = isset($_SESSION['user_id']);
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="cab.php" class="user-avatar-link">
+                        <a href="/cab" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
                                 alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
-                        <a href="login.php">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
                                 <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
@@ -192,7 +192,7 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <?php endif; ?>
 
                 <div class="news-meta">
-                    <a href="profile.php?id=<?= $news['author_id'] ?>" class="news-author">
+                    <a href="/profile/<?= $news['author_id'] ?>" class="news-author">
                         <img src="<?= htmlspecialchars($news['author_avatar']) ?>" alt="Автор">
                         <span><?= htmlspecialchars($news['author_login']) ?></span>
                     </a>
@@ -265,8 +265,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                     </form>
                 <?php else: ?>
                     <div class="auth-prompt">
-                        <p>Хотите оставить комментарий? <a href="login.php">Войдите</a> или <a
-                                href="reg.php">зарегистрируйтесь</a>!</p>
+                        <p>Хотите оставить комментарий? <a href="/login">Войдите</a> или <a
+                                href="/reg">зарегистрируйтесь</a>!</p>
                     </div>
                 <?php endif; ?>
 
@@ -288,7 +288,7 @@ $is_logged_in = isset($_SESSION['user_id']);
                             ?>
                             <div class="comment-card">
                                 <div class="comment-header">
-                                    <a href="profile.php?id=<?= $comment['user_id'] ?>" class="comment-author">
+                                    <a href="/profile/<?= $comment['user_id'] ?>" class="comment-author">
                                         <img src="<?= htmlspecialchars($comment['avatar']) ?>" alt="Автор">
                                         <span><?= htmlspecialchars($comment['login']) ?></span>
                                     </a>
