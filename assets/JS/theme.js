@@ -20,22 +20,27 @@ const backgrounds = {
 };
 
 // Ждём полной загрузки DOM
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    const savedBg = localStorage.getItem('background') || 'dark_1';
-    
+
+    // Загружаем фон именно для текущей темы (с запасным вариантом на старый ключ)
+    let savedBg = localStorage.getItem('background_' + savedTheme);
+    if (!savedBg) {
+        savedBg = localStorage.getItem('background') || (savedTheme === 'light' ? 'light_1' : 'dark_1');
+    }
+
     // Применяем тему
     if (savedTheme === 'light') {
         document.documentElement.classList.add('light-theme');
         document.body.classList.add('light-theme');
     }
-    
+
     // Применяем фон
     applyBackground(savedBg, savedTheme);
-    
+
     const themeToggle = document.getElementById('theme-toggle');
     const bgOptionsContainer = document.getElementById('background-options');
-    
+
     if (!themeToggle) return;
 
     // Устанавливаем положение ползунка
@@ -45,9 +50,26 @@ document.addEventListener('DOMContentLoaded', function() {
     renderBackgroundOptions(bgOptionsContainer, savedTheme, savedBg);
 
     // Обработчик переключения темы
-    themeToggle.addEventListener('change', function() {
+    themeToggle.addEventListener('change', function () {
         const newTheme = this.checked ? 'light' : 'dark';
-        
+        const oldTheme = newTheme === 'light' ? 'dark' : 'light';
+
+        // 1. Получаем текущий фон (который был до переключения)
+        let currentBg = localStorage.getItem('background_' + oldTheme);
+        if (!currentBg) {
+            currentBg = localStorage.getItem('background') || (oldTheme === 'light' ? 'light_1' : 'dark_1');
+        }
+
+        // 2. Сохраняем его в память для СТАРОЙ темы
+        localStorage.setItem('background_' + oldTheme, currentBg);
+
+        // 3. Получаем сохранённый фон для НОВОЙ темы
+        let newBg = localStorage.getItem('background_' + newTheme);
+        if (!newBg) {
+            newBg = newTheme === 'light' ? 'light_1' : 'dark_1';
+        }
+
+        // 4. Переключаем классы темы
         if (newTheme === 'light') {
             document.body.classList.add('light-theme');
             document.documentElement.classList.add('light-theme');
@@ -55,39 +77,40 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.remove('light-theme');
             document.documentElement.classList.remove('light-theme');
         }
-        
+
         localStorage.setItem('theme', newTheme);
-        
-        const defaultBg = newTheme === 'light' ? 'light_1' : 'dark_1';
-        localStorage.setItem('background', defaultBg);
-        applyBackground(defaultBg, newTheme);
-        renderBackgroundOptions(bgOptionsContainer, newTheme, defaultBg);
+
+        // 5. Применяем фон для новой темы и сохраняем его
+        localStorage.setItem('background_' + newTheme, newBg);
+        applyBackground(newBg, newTheme);
+        renderBackgroundOptions(bgOptionsContainer, newTheme, newBg);
     });
 });
 
 // Рендер опций фонов
 function renderBackgroundOptions(container, currentTheme, currentBg) {
     if (!container) return;
-    
+
     container.innerHTML = '';
     const bgList = backgrounds[currentTheme];
-    
+
     bgList.forEach(bg => {
         const option = document.createElement('div');
         option.className = 'background-option' + (bg.id === currentBg ? ' active' : '');
-        
+
         if (bg.path === null) {
             option.innerHTML = `<div class="no-bg-preview"><i class="fas fa-ban"></i></div>`;
         } else {
             option.innerHTML = `<img src="${bg.path}" alt="${bg.name}" loading="lazy">`;
         }
-        
+
         option.addEventListener('click', () => {
-            localStorage.setItem('background', bg.id);
+            // Сохраняем выбранный фон для ТЕКУЩЕЙ темы
+            localStorage.setItem('background_' + currentTheme, bg.id);
             applyBackground(bg.id, currentTheme);
             renderBackgroundOptions(container, currentTheme, bg.id);
         });
-        
+
         container.appendChild(option);
     });
 }
@@ -96,12 +119,19 @@ function renderBackgroundOptions(container, currentTheme, currentBg) {
 function applyBackground(bgId, theme) {
     const bgList = backgrounds[theme];
     const bg = bgList.find(b => b.id === bgId);
-    
+
     if (bg) {
         if (bg.path === null) {
             document.body.style.setProperty('--bg-image', 'none');
         } else {
-            document.body.style.setProperty('--bg-image', `url('${bg.path}')`);
+            const img = new Image();
+            img.onload = function () {
+                document.body.style.setProperty('--bg-image', `url('${bg.path}')`);
+            };
+            img.onerror = function () {
+                document.body.style.setProperty('--bg-image', 'none');
+            };
+            img.src = bg.path;
         }
     }
 }

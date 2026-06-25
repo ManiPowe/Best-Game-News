@@ -4,6 +4,17 @@ require_once 'check_admin.php';
 // Определяем активную вкладку
 $active_tab = $_GET['tab'] ?? 'moderation';
 
+// Получаем роль пользователя из БД (надёжнее, чем из сессии)
+$user_role = null;
+if (isset($_SESSION['user_id'])) {
+    $role_sql = "SELECT role FROM users WHERE id = ?";
+    $role_stmt = mysqli_prepare($conn, $role_sql);
+    mysqli_stmt_bind_param($role_stmt, "i", $_SESSION['user_id']);
+    mysqli_stmt_execute($role_stmt);
+    $role_res = mysqli_stmt_get_result($role_stmt);
+    $user_role = mysqli_fetch_assoc($role_res)['role'] ?? null;
+}
+
 // Получаем статистику для дашборда
 $stats = [
     'pending_news' => mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM news WHERE status = 'pending'"))['c'],
@@ -28,44 +39,95 @@ $stats = [
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    // Получаем роль пользователя из БД
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $role_sql = "SELECT role FROM users WHERE id = ?";
+        $role_stmt = mysqli_prepare($conn, $role_sql);
+        mysqli_stmt_bind_param($role_stmt, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($role_stmt);
+        $role_res = mysqli_stmt_get_result($role_stmt);
+        $user_role = mysqli_fetch_assoc($role_res)['role'] ?? null;
+    }
+    ?>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
                 <a class="logo-link" href="../index.php">
-                    <img src="/assets/Media/Photo/Logo.png" alt="Логотип">
+                    <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
                 <a href="../index.php">Главная</a>
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
-                <a href="../cab.php">Кабинет</a>
-                <a href="admin.php" class="admin-link">
-                    <i class="fas fa-shield-alt"></i> Админ панель
-                    <span class="admin-badge badge-<?= $admin_user['role'] ?>">
-                        <?= $admin_user['role'] === 'admin' ? 'Админ' : 'Модератор' ?>
-                    </span>
-                </a>
+                <a href="../category.php?type=games">Игры</a>
+                <a href="../category.php?type=news">Новости</a>
+                <a href="../category.php?type=articles">Статьи</a>
+                <a href="../category.php?type=videos">Видео</a>
+                <a href="../category.php?type=walkthroughs">Прохождения</a>
+                <a href="../help.php">Помощь</a>
+
+                <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="#" method="get">
-                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
                         <img src="/assets/Media/Photo/search.png" alt="Поиск">
                     </button>
                 </form>
                 <div class="auth">
-                    <a href="../cab.php?id=<?= $admin_user['id'] ?>" class="user-avatar-link">
-                        <img src="../<?= htmlspecialchars($admin_user['avatar']) ?>" alt="Профиль" class="header-avatar"
-                            onerror="this.src='../assets/Media/Photo/man.png'">
-                    </a>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                        // Достаём аватарку из БД, если её нет в сессии
+                        if (empty($_SESSION['avatar'])) {
+                            $avatar_sql = "SELECT avatar FROM users WHERE id = ?";
+                            $avatar_stmt = mysqli_prepare($conn, $avatar_sql);
+                            mysqli_stmt_bind_param($avatar_stmt, "i", $_SESSION['user_id']);
+                            mysqli_stmt_execute($avatar_stmt);
+                            $avatar_result = mysqli_stmt_get_result($avatar_stmt);
+                            if ($avatar_row = mysqli_fetch_assoc($avatar_result)) {
+                                $_SESSION['avatar'] = $avatar_row['avatar'];
+                            }
+                        }
+                        $avatar_path = $_SESSION['avatar'] ?? 'assets/Media/Photo/man.png';
+                        // Добавляем ../ если путь относительный (мы в папке /admin/)
+                        if (strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
+                            $avatar_path = '../' . $avatar_path;
+                        }
+                        ?>
+                        <a href="../profile.php?id=<?= $_SESSION['user_id'] ?>" class="user-avatar-link">
+                            <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Профиль" class="header-avatar"
+                                onerror="this.src='../assets/Media/Photo/man.png'">
+                        </a>
+                    <?php else: ?>
+                        <a href="../login.php">
+                            <button class="icon-btn" type="button" aria-label="Вход">
+                                <img src="../assets/Media/Photo/man.png" alt="Вход">
+                            </button>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
+        </div>
     </header>
 
     <main>
@@ -89,13 +151,13 @@ $stats = [
                         <i class="fas fa-chart-bar"></i> Статистика
                     </a>
 
-                    <?php if ($admin_user['role'] === 'admin'): ?>
+                    <?php if ($user_role === 'admin'): ?>
                         <a href="?tab=users" class="menu-item <?= $active_tab === 'users' ? 'active' : '' ?>">
                             <i class="fas fa-users"></i> Пользователи
                         </a>
                     <?php endif; ?>
 
-                    <?php if (in_array($admin_user['role'], ['admin', 'moderator'])): ?>
+                    <?php if (in_array($user_role, ['admin', 'moderator'])): ?>
                         <a href="?tab=featured" class="menu-item <?= $active_tab === 'featured' ? 'active' : '' ?>">
                             <i class="fas fa-star"></i> Новости недели
                         </a>

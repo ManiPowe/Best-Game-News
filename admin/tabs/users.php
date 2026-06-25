@@ -1,8 +1,12 @@
 <?php
-// Только для админов
-if ($_SESSION['admin_role'] !== 'admin') {
-    echo '<div class="empty-state"><i class="fas fa-lock"></i><p>Доступ запрещён</p></div>';
-    exit;
+// Проверяем, что пользователь — админ (модерам нельзя сюда)
+if (!isset($user_role) || $user_role !== 'admin') {
+    echo '<div class="access-denied">';
+    echo '<i class="fas fa-lock" style="color: #4CAF50; font-size: 60px;"></i>';
+    echo '<h2>Доступ запрещён</h2>';
+    echo '<p>Эта страница доступна только администраторам</p>';
+    echo '</div>';
+    return; // Прерываем выполнение, не показываем контент
 }
 
 // Поиск пользователей

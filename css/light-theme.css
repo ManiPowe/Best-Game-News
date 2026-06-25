@@ -25,7 +25,6 @@ body.light-theme .reviews-section,
 body.light-theme .activity-section,
 body.light-theme .user-comments-section,
 body.light-theme .favorites-container,
-body.light-theme .dashboard,
 body.light-theme .sidebar,
 body.light-theme .content-area,
 body.light-theme .content-header,
@@ -47,10 +46,27 @@ body.light-theme .theme-switcher-block,
 body.light-theme .hero-card,
 body.light-theme .news-content,
 body.light-theme .profile-bio,
+body.light-theme .footer,
 body.light-theme .author-card {
     background-color: var(--bg-card);
     border-color: var(--border-color);
     box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+body.light-theme .comment-text {
+    color: #000000;
+}
+
+body.light-theme .news-game-badge {
+    background-color: #b4b4b4;
+}
+
+body.light-theme .content-header {
+    border-radius: 15px;
+}
+
+body.light-theme .news-content {
+    border-radius: 15px;
 }
 
 /* Текст */
@@ -159,19 +175,6 @@ body.light-theme input[type="file"]::file-selector-button:hover {
     background-color: #ff4444;
 }
 
-/* Футер */
-body.light-theme .footer {
-    background-color: var(--bg-card);
-    border-top: 1px solid var(--border-color);
-}
-
-body.light-theme .footer p {
-    color: var(--text-muted);
-}
-
-body.light-theme .footer-logo p {
-    color: var(--accent-color);
-}
 
 /* Кнопки соцсетей */
 body.light-theme .social-links button {
@@ -381,4 +384,711 @@ body.light-theme {
     background-position: center !important;
     background-repeat: no-repeat !important;
     background-attachment: fixed !important;
+}
+
+/* Фикс для фонов в светлой теме */
+.light-theme body {
+    background-image: var(--bg-image, none) !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: scroll !important;
+    /* Чтобы не лагало! */
+}
+
+/* ===== ССЫЛКИ И КНОПКИ В СВЕТЛОЙ ТЕМЕ ===== */
+
+/* Навигация */
+.light-theme .nav a {
+    color: #292929 !important;
+    font-weight: 600;
+}
+
+.light-theme .nav a:hover {
+    color: #df1b1b !important;
+    background-color: rgba(223, 27, 27, 0.1);
+}
+
+/* Кнопки действий */
+.light-theme .action-btn {
+    background-color: #f0f0f0 !important;
+    color: #292929 !important;
+    border: 2px solid #df1b1b !important;
+}
+
+.light-theme .action-btn:hover {
+    background-color: #df1b1b !important;
+    color: white !important;
+}
+
+/* Кнопки лайка и избранного */
+.light-theme .todays-stats .stat-btn {
+    background-color: #f0f0f0 !important;
+    color: #292929 !important;
+    border: 2px solid #df1b1b !important;
+}
+
+.light-theme .todays-stats .stat-btn:hover {
+    background-color: #df1b1b !important;
+    color: white !important;
+}
+
+.light-theme .todays-stats .stat-btn.like-btn.active {
+    background-color: #df1b1b !important;
+    color: white !important;
+}
+
+.light-theme .todays-stats .stat-btn.favorite-btn.active {
+    background-color: #FFC107 !important;
+    color: white !important;
+}
+
+/* Поля ввода */
+.light-theme .search-input {
+    background-color: #f5f5f5 !important;
+    color: #292929 !important;
+    border: 1px solid #ddd !important;
+}
+
+.light-theme .search-input::placeholder {
+    color: #999 !important;
+}
+
+.light-theme .search-input:hover,
+.light-theme .search-input:focus {
+    background-color: #fff !important;
+    border-color: #df1b1b !important;
+}
+
+/* Кнопки поиска */
+.light-theme .search-btn,
+.light-theme .icon-btn {
+    background-color: transparent !important;
+    color: #292929 !important;
+}
+
+.light-theme .search-btn:hover,
+.light-theme .icon-btn:hover {
+    background-color: rgba(223, 27, 27, 0.1) !important;
+}
+
+/* Ссылки в новостях */
+.light-theme .news-list a,
+.light-theme .todays-news .read-more,
+.light-theme .hero-text a {
+    color: #df1b1b !important;
+    font-weight: 600;
+}
+
+.light-theme .news-list a:hover,
+.light-theme .todays-news .read-more:hover,
+.light-theme .hero-text a:hover {
+    color: #ff4444 !important;
+}
+
+/* Текст - делаем темнее! */
+.light-theme .news-content p,
+.light-theme .todays-description,
+.light-theme .hero-text p,
+.light-theme .news-content,
+.light-theme .news-list p {
+    color: #1a1a1a !important;
+    /* Было #444, делаем почти чёрным */
+}
+
+/* Мета-информация - тоже темнее */
+.light-theme .meta-value,
+.light-theme .todays-author,
+.light-theme .todays-date,
+.light-theme .author-info p,
+.light-theme .news-meta {
+    color: #333 !important;
+    /* Было #666, делаем темнее */
+}
+
+/* Заголовки */
+.light-theme .news-content h3,
+.light-theme .todays-title,
+.light-theme .hero-text h2,
+.light-theme .section-header h2,
+.light-theme .author-info h4 {
+    color: #c41717 !important;
+    /* Чуть темнее красный для контраста */
+}
+
+/* Боковые панели */
+.light-theme .popular-authors,
+.light-theme .game-marquee {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+}
+
+.light-theme .author-card {
+    background-color: #fff !important;
+}
+
+.light-theme .author-card:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.light-theme .author-info h4 {
+    color: #df1b1b !important;
+}
+
+.light-theme .author-info p {
+    color: #666 !important;
+}
+
+/* Слайдер */
+.light-theme .hero-section {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%) !important;
+}
+
+.light-theme .hero-card {
+    background-color: #fff !important;
+}
+
+/* Новости */
+.light-theme .news-container,
+.light-theme .news-list article {
+    background-color: #f5f5f5 !important;
+}
+
+.light-theme .news-content {
+    background-color: #fff !important;
+}
+
+.light-theme .footer-logo p {
+    color: #df1b1b !important;
+}
+
+.light-theme .prav {
+    color: #666 !important;
+}
+
+/* Модальные окна и формы */
+.light-theme textarea,
+.light-theme input[type="text"],
+.light-theme input[type="password"],
+.light-theme input[type="email"] {
+    background-color: #f5f5f5 !important;
+    color: #292929 !important;
+    border: 1px solid #ddd !important;
+}
+
+/* Бейджи в светлой теме */
+.light-theme .role-badge {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.light-theme .notification-bell {
+    background: #ffffff !important;
+    color: #333 !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+/* Модальное отклонения в светлой теме */
+.light-theme .reject-modal-content {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .reject-news-title strong {
+    color: #1a1a1a !important;
+}
+
+.light-theme .reject-modal-content label {
+    color: #333 !important;
+}
+
+.light-theme .reject-modal-content textarea {
+    background: #f0f0f0 !important;
+    border-color: #e0e0e0 !important;
+    color: #333 !important;
+}
+
+.light-theme .btn-cancel {
+    color: #333 !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .btn-cancel:hover {
+    background: #f0f0f0 !important;
+}
+
+.light-theme .notification-bell:hover {
+    background: #df1b1b !important;
+    color: white !important;
+    border-color: #df1b1b !important;
+}
+
+/* Комментарии в светлой теме */
+.light-theme .comments-tabs {
+    border-bottom-color: #e0e0e0 !important;
+}
+
+.light-theme .comments-tab-btn {
+    color: #666 !important;
+}
+
+.light-theme .comments-tab-btn:hover {
+    color: #333 !important;
+}
+
+.light-theme .comment-card {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .comment-card:hover {
+    border-color: #df1b1b !important;
+}
+
+.light-theme .comment-text {
+    color: #333 !important;
+}
+
+.light-theme .comment-actions {
+    border-top-color: #e0e0e0 !important;
+}
+
+.light-theme .reply-name {
+    color: #333 !important;
+}
+
+.light-theme textarea::placeholder,
+.light-theme input::placeholder {
+    color: #999 !important;
+}
+
+/* Кнопки форм */
+.light-theme button[type="submit"],
+.light-theme .btn-primary {
+    background-color: #df1b1b !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Уведомления в светлой теме */
+.light-theme .notification-card {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .notification-card.unread {
+    background: rgba(223, 27, 27, 0.05) !important;
+    border-left-color: #df1b1b !important;
+}
+
+.light-theme .notification-icon {
+    background: #f0f0f0 !important;
+}
+
+.light-theme .notification-content p {
+    color: #333 !important;
+}
+
+.light-theme .filter-btn {
+    background: #f0f0f0 !important;
+    color: #555 !important;
+}
+
+.light-theme .filter-btn:hover {
+    background: #e0e0e0 !important;
+    color: #333 !important;
+    border-color: #df1b1b !important;
+}
+
+/* Заглушка в светлой теме */
+.light-theme .news-image-wrap img[src*="Заглушка.jpg"] {
+     background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%) !important;
+    background: transparent !important;
+}
+
+.light-theme .filter-btn.active {
+    background: #df1b1b !important;
+    color: white !important;
+    border-color: #df1b1b !important;
+    box-shadow: 0 0 10px rgba(223, 27, 27, 0.5) !important;
+}
+
+.light-theme .category-header{
+    background-color: white;
+}
+
+/* Фильтры игр в светлой теме */
+.light-theme .games-filter {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+}
+
+.light-theme .filter-btn {
+    background: #f0f0f0 !important;
+    color: #555 !important;
+}
+
+.light-theme .filter-btn:hover {
+    background: #e0e0e0 !important;
+    color: #333 !important;
+    border-color: #df1b1b !important;
+}
+
+.light-theme .filter-btn.active {
+    background: #df1b1b !important;
+    color: white !important;
+}
+
+.light-theme button[type="submit"]:hover,
+.light-theme .btn-primary:hover {
+    background-color: #ff4444 !important;
+}
+
+/* ===== ПОИСК В СВЕТЛОЙ ТЕМЕ ===== */
+
+.light-theme .search-title {
+    color: #1a1a1a !important;
+    border-bottom-color: #e0e0e0 !important;
+    background-color: white !important;
+}
+
+.light-theme .search-section h2 {
+    color: #df1b1b !important;
+}
+
+.light-theme .result-card {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .result-card:hover {
+    border-color: #df1b1b !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .result-info h4 {
+    color: #1a1a1a !important;
+}
+
+.light-theme .no-icon {
+    background: #f0f0f0 !important;
+    color: #999 !important;
+}
+
+.light-theme .search-empty {
+    color: #666 !important;
+}
+
+.light-theme .search-empty h2 {
+    color: #1a1a1a !important;
+}
+
+/* Кнопка создания новости в светлой теме */
+.light-theme .create-news-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4) !important;
+}
+
+.light-theme .create-news-btn:hover {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6) !important;
+}
+
+/* Ссылка админки в светлой теме */
+.light-theme .admin-link {
+    background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 165, 2, 0.3) !important;
+}
+
+.light-theme .admin-link:hover {
+    box-shadow: 0 6px 16px rgba(255, 165, 2, 0.5) !important;
+}
+
+.light-theme .nav a {
+    color: #292929 !important;
+}
+
+.light-theme .nav a:hover {
+    color: #df1b1b !important;
+}
+
+/* ===== ПРАВЫЙ СЛАЙДЕР ИГР В СВЕТЛОЙ ТЕМЕ ===== */
+
+/* Общий контейнер — светлый фон */
+.light-theme .game-marquee {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%) !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .game-marquee h3 {
+    color: #df1b1b !important;
+}
+
+/* Кнопки прокрутки */
+.light-theme .marquee-btn {
+    background: #df1b1b !important;
+    color: white !important;
+}
+
+.light-theme .marquee-btn:hover {
+    background: #ff4444 !important;
+    transform: scale(1.1);
+}
+
+/* Элементы списка — ТЕМНЫЙ фон (чтобы белые иконки были видны) */
+.light-theme .marquee-item {
+    background: linear-gradient(135deg, #fdfdfd 0%, #797979 100%) !important;
+    color: #000000 !important;
+    border: 1px solid #797979 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.light-theme .marquee-item:hover {
+    background: linear-gradient(135deg, #df1b1b 0%, #ff4444 100%) !important;
+    color: white !important;
+    border-color: #df1b1b !important;
+    transform: translateX(5px);
+}
+
+/* Название игры */
+.light-theme .game-name {
+    color: #000000 !important;
+    font-weight: 500;
+}
+
+.light-theme .marquee-item:hover .game-name {
+    color: white !important;
+}
+
+/* Иконки игр — добавляем тень для лучшей видимости */
+.light-theme .game-icon {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)) !important;
+}
+
+.light-theme .marquee-item:hover .game-icon {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)) !important;
+}
+
+/* ===== КНОПКИ ЛАЙКА И ИЗБРАННОГО В СВЕТЛОЙ ТЕМЕ ===== */
+
+/* Обычное (неактивное) состояние */
+.light-theme .like-btn,
+.light-theme .favorite-btn,
+.light-theme .action-btn {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+    color: #555 !important;
+}
+
+.light-theme .like-btn:hover,
+.light-theme .favorite-btn:hover,
+.light-theme .action-btn:hover {
+    background-color: #eee !important;
+    border-color: #bbb !important;
+    color: #333 !important;
+}
+
+/* Активный лайк (красный) */
+.light-theme .like-btn.active {
+    background-color: rgba(223, 27, 27, 0.1) !important;
+    border-color: #df1b1b !important;
+    color: #df1b1b !important;
+}
+
+.light-theme .like-btn.active:hover {
+    background-color: rgba(223, 27, 27, 0.2) !important;
+}
+
+/* Активное избранное (желто-оранжевый, чтобы было видно на белом) */
+.light-theme .favorite-btn.active {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    border-color: #e6a800 !important;
+    color: #e6a800 !important;
+    /* Чуть темнее желтый для контраста */
+}
+
+.light-theme .favorite-btn.active:hover {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+}
+
+/* ===== МОДЕРАЦИЯ В СВЕТЛОЙ ТЕМЕ ===== */
+
+/* Карточка модерации */
+.light-theme .mod-card {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .mod-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    border-color: #df1b1b !important;
+}
+
+/* Верхняя панель */
+.light-theme .mod-card-actions {
+    background: #f8f8f8 !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Game badge */
+.light-theme .game-badge {
+    background: #df1b1b !important;
+    color: white !important;
+}
+
+.light-theme .game-badge img {
+    filter: brightness(0) invert(1);
+}
+
+/* Кнопки действий */
+.light-theme .btn-approve-small {
+    background: #4CAF50 !important;
+    color: white !important;
+}
+
+.light-theme .btn-approve-small:hover {
+    background: #45a049 !important;
+}
+
+.light-theme .btn-reject-small {
+    background: #f44336 !important;
+    color: white !important;
+}
+
+.light-theme .btn-reject-small:hover {
+    background: #d32f2f !important;
+}
+
+.light-theme .btn-view-small {
+    background: #e0e0e0 !important;
+    color: #333 !important;
+}
+
+.light-theme .btn-view-small:hover {
+    background: #df1b1b !important;
+    color: white !important;
+}
+
+/* Заголовок новости */
+.light-theme .mod-card-text h3 {
+    color: #df1b1b !important;
+}
+
+/* Описание */
+.light-theme .mod-description {
+    color: #444 !important;
+}
+
+/* Теги */
+.light-theme .mod-tags .tag {
+    background: #f0f0f0 !important;
+    color: #555 !important;
+    border: 1px solid #ddd !important;
+}
+
+/* Футер карточки */
+.light-theme .mod-card-footer {
+    border-top: 1px solid #e0e0e0 !important;
+}
+
+/* Автор */
+.light-theme .mod-author {
+    color: #666 !important;
+}
+
+.light-theme .mod-author img {
+    border-color: #df1b1b !important;
+}
+
+/* Дата */
+.light-theme .mod-date {
+    color: #999 !important;
+}
+
+.light-theme .mod-date i {
+    color: #df1b1b !important;
+}
+
+/* Изображение */
+.light-theme .mod-card-image {
+    background: #f5f5f5 !important;
+}
+
+/* Заголовок раздела модерации */
+.light-theme .moderation-title h2 {
+    color: #df1b1b !important;
+}
+
+.light-theme .moderation-title p {
+    color: #666 !important;
+}
+
+.light-theme .moderation-title strong {
+    color: #df1b1b !important;
+}
+
+/* Пустое состояние */
+.light-theme .empty-moderation {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+.light-theme .empty-moderation h3 {
+    color: #333 !important;
+}
+
+.light-theme .empty-moderation p {
+    color: #666 !important;
+}
+
+/* ===== БЕЙДЖИ ИГР В СВЕТЛОЙ ТЕМЕ ===== */
+
+/* Бейдж игры в новостях */
+.light-theme .game-badge {
+    background: linear-gradient(135deg, #df1b1b 0%, #ff4444 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.light-theme .game-badge span {
+    color: white !important;
+}
+
+/* Иконка игры — оставляем цветной или делаем белой с тенью */
+.light-theme .game-badge img,
+.light-theme .game-badge .game-icon {
+    /* Убираем инверсию, оставляем оригинальные цвета */
+    filter: none !important;
+
+    /* Или если хочешь белые иконки, раскомментируй это: */
+    /* filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba(0, 0, 0, 0.3)) !important; */
+}
+
+/* Если иконка SVG и не отображается корректно */
+.light-theme .game-badge img[src$=".svg"] {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px;
+    border-radius: 4px;
+}
+
+/* Для темной темы оставляем как было */
+.game-badge {
+    background: linear-gradient(135deg, #df1b1b 0%, #ff4444 100%);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.game-badge img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    /* В темной теме можно инвертировать если нужно */
+    /* filter: brightness(0) invert(1); */
 }

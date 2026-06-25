@@ -751,7 +751,317 @@
     color: #ffffff !important;
 }
 
+/* ===== МОДЕРАЦИЯ - НОВЫЙ СТИЛЬ ===== */
+.moderation-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #292929;
+}
 
+.moderation-title h2 {
+    color: #df1b1b;
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.moderation-title p {
+    color: #b0b0b0;
+    font-size: 16px;
+}
+
+.moderation-title strong {
+    color: #df1b1b;
+}
+
+.empty-moderation{
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.moderation-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mod-card {
+    background: #1a1a1a;
+    border-radius: 15px;
+    border: 1px solid #333;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mod-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #292929;
+    border-bottom: 1px solid #333;
+}
+
+.mod-card-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.game-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #df1b1b;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.game-badge img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.mod-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-approve-small,
+.btn-reject-small,
+.btn-view-small {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-approve-small {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-approve-small:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+.btn-reject-small {
+    background: #f44336;
+    color: white;
+}
+
+.btn-reject-small:hover {
+    background: #d32f2f;
+    transform: scale(1.05);
+}
+
+.btn-view-small {
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+}
+
+.btn-view-small:hover {
+    background: #df1b1b;
+    transform: scale(1.05);
+}
+
+.mod-card-content {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.mod-card-image {
+    width: 250px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.mod-card-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+}
+
+.mod-card-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.mod-card-text h3 {
+    color: #df1b1b;
+    font-size: 22px;
+    margin-bottom: 12px;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.mod-description {
+    color: #e0e0e0;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.mod-description .read-more {
+    color: #df1b1b;
+    font-weight: bold;
+}
+
+.mod-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.mod-tags .tag {
+    background: #292929;
+    color: #b0b0b0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    border: 1px solid #333;
+}
+
+.mod-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+}
+
+.mod-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b0b0b0;
+    font-size: 14px;
+}
+
+.mod-author img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #df1b1b;
+}
+
+.mod-date {
+    color: #777;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mod-date i {
+    color: #df1b1b;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .mod-card-content {
+        flex-direction: column;
+    }
+    
+    .mod-card-image {
+        width: 100%;
+    }
+    
+    .mod-card-image img {
+        height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mod-card-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .mod-buttons {
+        justify-content: stretch;
+    }
+    
+    .btn-approve-small,
+    .btn-reject-small,
+    .btn-view-small {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .mod-card-footer {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .moderation-header {
+        flex-direction: column;
+    }
+    
+    .news-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .btn-approve,
+    .btn-reject {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+.mod-game-badge-top {
+    position: absolute;
+    top: 65px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #df1b1b;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 10;
+}
+
+.mod-game-badge-top img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.mod-card {
+    position: relative;
+}
 
 /* ===== АДАПТИВНОСТЬ ===== */
 @media (max-width: 768px) {

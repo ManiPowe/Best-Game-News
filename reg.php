@@ -24,17 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Пользователь с таким логином или email уже существует!";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
+
             $sql = "INSERT INTO users (login, password, name, email, phone, avatar) VALUES (?, ?, ?, ?, ?, 'assets/Media/Photo/man.png')";
             $stmt = mysqli_prepare($conn, $sql);
             mysqli_stmt_bind_param($stmt, "sssss", $login, $hashed_password, $name, $email, $phone);
-            
+
             if (mysqli_stmt_execute($stmt)) {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = mysqli_insert_id($conn);
                 $_SESSION['login'] = $login;
                 $_SESSION['avatar'] = 'assets/Media/Photo/man.png';
-                
+
                 header("Location: ../../index.php");
                 exit;
             } else {
@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,7 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" href="assets/Media/Photo/asd.png">
     <title>Регистрация - Best Game News</title>
 </head>
+
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -75,7 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="auth-container">
                 <h2>Регистрация</h2>
                 <?php if ($error): ?>
-                    <p style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;"><?= htmlspecialchars($error) ?></p>
+                    <p
+                        style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;">
+                        <?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
                 <form class="auth-form" method="POST">
                     <div class="form-group">
@@ -137,4 +143,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </footer>
 </body>
+
 </html>

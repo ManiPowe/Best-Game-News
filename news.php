@@ -100,6 +100,25 @@ $is_logged_in = isset($_SESSION['user_id']);
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    
+    // Получаем роль пользователя ОДИН раз
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $check_role_sql = "SELECT role FROM users WHERE id = ?";
+        $stmt_role = mysqli_prepare($conn, $check_role_sql);
+        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($stmt_role);
+        $result_role = mysqli_stmt_get_result($stmt_role);
+        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
+    }
+    ?>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -109,16 +128,30 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
+                <a href="index.php">Главная</a>
+                <a href="category.php?type=games">Игры</a>
+                <a href="category.php?type=news">Новости</a>
+                <a href="category.php?type=articles">Статьи</a>
+                <a href="category.php?type=videos">Видео</a>
+                <a href="category.php?type=walkthroughs">Прохождения</a>
+                <a href="help.php">Помощь</a>
+
+                <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="#" method="get">
-                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
                         <img src="/assets/Media/Photo/search.png" alt="Поиск">
                     </button>
@@ -126,7 +159,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
+                                alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
                         <a href="login.php">
@@ -238,7 +272,20 @@ $is_logged_in = isset($_SESSION['user_id']);
 
                 <?php if (!empty($comments)): ?>
                     <div class="comments-list">
-                        <?php foreach ($comments as $comment): ?>
+                        <?php foreach ($comments as $comment):
+                            // Проверяем, лайкал ли текущий пользователь
+                            $is_comment_liked = false;
+                            if ($is_logged_in) {
+                                $comment_like_check = mysqli_prepare($conn, "SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?");
+                                if ($comment_like_check) {
+                                    mysqli_stmt_bind_param($comment_like_check, "ii", $_SESSION['user_id'], $comment['id']);
+                                    mysqli_stmt_execute($comment_like_check);
+                                    mysqli_stmt_store_result($comment_like_check);
+                                    $is_comment_liked = mysqli_stmt_num_rows($comment_like_check) > 0;
+                                    mysqli_stmt_close($comment_like_check);
+                                }
+                            }
+                            ?>
                             <div class="comment-card">
                                 <div class="comment-header">
                                     <a href="profile.php?id=<?= $comment['user_id'] ?>" class="comment-author">
@@ -250,6 +297,13 @@ $is_logged_in = isset($_SESSION['user_id']);
                                 </div>
                                 <div class="comment-text">
                                     <?= nl2br(htmlspecialchars($comment['text'])) ?>
+                                </div>
+                                <div class="comment-actions">
+                                    <button class="comment-like-btn <?= $is_comment_liked ? 'active' : '' ?>"
+                                        data-comment-id="<?= $comment['id'] ?>">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="comment-like-count"><?= $comment['likes_count'] ?? 0 ?></span>
+                                    </button>
                                 </div>
                             </div>
                         <?php endforeach; ?>

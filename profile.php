@@ -22,7 +22,7 @@ if (!$user) {
 
 $is_logged_in = isset($_SESSION['user_id']);
 $is_own_profile = ($is_logged_in && $_SESSION['user_id'] == $user['id']);
-$is_creator = ($user['role'] === 'creator' || $user['role'] === 'admin');
+$is_creator = ($user['role'] === 'creator' || $user['role'] === 'moderator' || $user['role'] === 'admin');
 
 $sql_reviews = "SELECT pr.*, u.login as author_login, u.avatar as author_avatar 
                 FROM profile_reviews pr 
@@ -46,6 +46,39 @@ if ($is_logged_in && !$is_own_profile) {
     mysqli_stmt_execute($stmt_check);
     mysqli_stmt_store_result($stmt_check);
     $has_reviewed = (mysqli_stmt_num_rows($stmt_check) > 0);
+    // === СТАТИСТИКА ПОЛЬЗОВАТЕЛЯ ===
+
+    // Количество постов (опубликованных)
+    $posts_count_sql = "SELECT COUNT(*) as count FROM news WHERE author_id = ? AND status = 'published'";
+    $posts_count_stmt = mysqli_prepare($conn, $posts_count_sql);
+    mysqli_stmt_bind_param($posts_count_stmt, "i", $target_user_id);
+    mysqli_stmt_execute($posts_count_stmt);
+    $posts_result = mysqli_stmt_get_result($posts_count_stmt);
+    $posts_count = $posts_result ? (mysqli_fetch_assoc($posts_result)['count'] ?? 0) : 0;
+
+    // Количество лайков (сумма всех лайков на постах пользователя)
+    $likes_count_sql = "SELECT COALESCE(SUM(likes_count), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
+    $likes_count_stmt = mysqli_prepare($conn, $likes_count_sql);
+    mysqli_stmt_bind_param($likes_count_stmt, "i", $target_user_id);
+    mysqli_stmt_execute($likes_count_stmt);
+    $likes_result = mysqli_stmt_get_result($likes_count_stmt);
+    $likes_count = $likes_result ? (mysqli_fetch_assoc($likes_result)['count'] ?? 0) : 0;
+
+    // Количество комментариев пользователя
+    $comments_count_sql = "SELECT COUNT(*) as count FROM comments WHERE user_id = ?";
+    $comments_count_stmt = mysqli_prepare($conn, $comments_count_sql);
+    mysqli_stmt_bind_param($comments_count_stmt, "i", $target_user_id);
+    mysqli_stmt_execute($comments_count_stmt);
+    $comments_result = mysqli_stmt_get_result($comments_count_stmt);
+    $comments_count = $comments_result ? (mysqli_fetch_assoc($comments_result)['count'] ?? 0) : 0;
+
+    // Количество просмотров (сумма просмотров всех постов)
+    $views_count_sql = "SELECT COALESCE(SUM(views), 0) as count FROM news WHERE author_id = ? AND status = 'published'";
+    $views_count_stmt = mysqli_prepare($conn, $views_count_sql);
+    mysqli_stmt_bind_param($views_count_stmt, "i", $target_user_id);
+    mysqli_stmt_execute($views_count_stmt);
+    $views_result = mysqli_stmt_get_result($views_count_stmt);
+    $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0) : 0;
 }
 ?>
 <!DOCTYPE html>
@@ -63,6 +96,25 @@ if ($is_logged_in && !$is_own_profile) {
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    
+    // Получаем роль пользователя ОДИН раз
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $check_role_sql = "SELECT role FROM users WHERE id = ?";
+        $stmt_role = mysqli_prepare($conn, $check_role_sql);
+        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($stmt_role);
+        $result_role = mysqli_stmt_get_result($stmt_role);
+        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
+    }
+    ?>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -72,24 +124,39 @@ if ($is_logged_in && !$is_own_profile) {
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
+                <a href="index.php">Главная</a>
+                <a href="category.php?type=games">Игры</a>
+                <a href="category.php?type=news">Новости</a>
+                <a href="category.php?type=articles">Статьи</a>
+                <a href="category.php?type=videos">Видео</a>
+                <a href="category.php?type=walkthroughs">Прохождения</a>
+                <a href="help.php">Помощь</a>
+
+                <?php if ($user_role === 'admin' || $user['role'] === 'moderator' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="#" method="get">
-                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
                         <img src="/assets/Media/Photo/search.png" alt="Поиск">
                     </button>
                 </form>
                 <div class="auth">
-                    <?php if ($is_logged_in): ?>
+                    <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
+                                alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
                         <a href="login.php">
@@ -123,9 +190,25 @@ if ($is_logged_in && !$is_own_profile) {
 
                                 <div class="profile-header-center">
                                     <div class="profile-info">
-                                        <h2><?= htmlspecialchars($user['login']) ?></h2>
+                                        <h2>
+                                            <?= htmlspecialchars($user['login']) ?>
 
-                                        <?php if ($user['role'] === 'creator' || $user['role'] === 'admin'): ?>
+                                            <?php if ($user['role'] === 'admin'): ?>
+                                                <span class="role-badge admin-badge" title="Администратор">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </span>
+                                            <?php elseif ($user['role'] === 'moderator'): ?>
+                                                <span class="role-badge moderator-badge" title="Модератор">
+                                                    <i class="fas fa-user-shield"></i>
+                                                </span>
+                                            <?php elseif ($user['role'] === 'creator'): ?>
+                                                <span class="role-badge creator-badge" title="Создатель контента">
+                                                    <i class="fas fa-star"></i>
+                                                </span>
+                                            <?php endif; ?>
+                                        </h2>
+
+                                        <?php if ($user['role'] === 'creator' || $user['role'] === 'moderator' || $user['role'] === 'admin'): ?>
                                             <div class="creator-badge">
                                                 <i class="fas fa-star"></i>
                                                 <span>Создатель контента</span>
@@ -135,24 +218,27 @@ if ($is_logged_in && !$is_own_profile) {
                                         <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
                                         <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
                                         <p><i class="fas fa-calendar"></i> Участник с
-                                            <?= date('d.m.Y', strtotime($user['created_at'])) ?></p>
+                                            <?= date('d.m.Y', strtotime($user['created_at'])) ?>
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div class="profile-header-right">
-                                    <div class="profile-stats">
-                                        <div class="stat-item">
-                                            <div class="stat-value"><?= $posts_count ?? 0 ?></div>
-                                            <div class="stat-label">Посты</div>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-value"><?= $total_likes ?? 0 ?></div>
-                                            <div class="stat-label">Лайки</div>
-                                        </div>
-                                        <div class="stat-item">
-                                            <div class="stat-value"><?= $user['comments_count'] ?? 0 ?></div>
-                                            <div class="stat-label">Комментарии</div>
-                                        </div>
+                                <div class="profile-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-number"><?= (int) $posts_count ?></div>
+                                        <div class="stat-label">Постов</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><?= (int) $likes_count ?></div>
+                                        <div class="stat-label">Лайков</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><?= (int) $comments_count ?></div>
+                                        <div class="stat-label">Комментариев</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-number"><?= (int) $views_count ?></div>
+                                        <div class="stat-label">Просмотров</div>
                                     </div>
                                 </div>
                             </div>
@@ -230,9 +316,14 @@ if ($is_logged_in && !$is_own_profile) {
                                                 </div>
                                             </a>
 
-                                            <?php if ($is_author): ?>
+                                            <?php
+                                            // Показываем кнопки если: это автор ИЛИ текущий пользователь — админ/модер
+                                            $can_manage_post = $is_author || in_array($user_role, ['admin', 'moderator']);
+                                            ?>
+
+                                            <?php if ($can_manage_post): ?>
                                                 <div class="post-actions">
-                                                    <?php if ($post['status'] === 'draft'): ?>
+                                                    <?php if ($is_author && $post['status'] === 'draft'): ?>
                                                         <form action="assets/app/publish_news.php" method="POST" style="display: inline;">
                                                             <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
                                                             <button type="submit" class="action-btn publish-btn"
@@ -242,13 +333,15 @@ if ($is_logged_in && !$is_own_profile) {
                                                         </form>
                                                     <?php endif; ?>
 
-                                                    <a href="edit_news.php?id=<?= $post['id'] ?>" class="action-btn edit-btn"
-                                                        title="Редактировать">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
+                                                    <?php if ($is_author): ?>
+                                                        <a href="edit_news.php?id=<?= $post['id'] ?>" class="action-btn edit-btn"
+                                                            title="Редактировать">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    <?php endif; ?>
 
                                                     <form action="assets/app/delete_news.php" method="POST" style="display: inline;"
-                                                        onsubmit="return confirm('Удалить эту новость?');">
+                                                        onsubmit="return confirm('Удалить эту новость? Это действие нельзя отменить!');">
                                                         <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
                                                         <button type="submit" class="action-btn delete-btn" title="Удалить">
                                                             <i class="fas fa-trash"></i>
@@ -384,7 +477,23 @@ if ($is_logged_in && !$is_own_profile) {
 
                     <?php if (!empty($comments)): ?>
                         <div class="user-comments-list">
-                            <?php foreach ($comments as $comment): ?>
+                            <?php foreach ($comments as $comment):
+                                // Проверяем, лайкал ли текущий пользователь
+                                $is_comment_liked = false;
+                                if ($is_logged_in) {
+                                    $is_comment_liked = false;
+                                    if ($is_logged_in) {
+                                        $comment_like_check = mysqli_prepare($conn, "SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?");
+                                        if ($comment_like_check) {
+                                            mysqli_stmt_bind_param($comment_like_check, "ii", $_SESSION['user_id'], $comment['id']);
+                                            mysqli_stmt_execute($comment_like_check);
+                                            mysqli_stmt_store_result($comment_like_check); // ← ДОБАВЛЕНО!
+                                            $is_comment_liked = mysqli_stmt_num_rows($comment_like_check) > 0;
+                                            mysqli_stmt_close($comment_like_check);
+                                        }
+                                    }
+                                }
+                                ?>
                                 <div class="user-comment-card">
                                     <div class="comment-header">
                                         <a href="news.php?id=<?= $comment['news_id'] ?>" class="comment-news-link">
@@ -397,9 +506,11 @@ if ($is_logged_in && !$is_own_profile) {
                                         <?= nl2br(htmlspecialchars($comment['text'])) ?>
                                     </div>
                                     <div class="comment-actions">
-                                        <span class="comment-likes">
-                                            <i class="fas fa-heart"></i> <?= $comment['likes'] ?>
-                                        </span>
+                                        <button class="comment-like-btn <?= $is_comment_liked ? 'active' : '' ?>"
+                                            data-comment-id="<?= $comment['id'] ?>">
+                                            <i class="fas fa-heart"></i>
+                                            <span class="comment-like-count"><?= $comment['likes_count'] ?? 0 ?></span>
+                                        </button>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -443,7 +554,8 @@ if ($is_logged_in && !$is_own_profile) {
             </div>
         </div>
     </footer>
-    <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/theme.js" defer></script>
+    <script src="/assets/js/profile.js" defer></script>
 </body>
 
 </html>

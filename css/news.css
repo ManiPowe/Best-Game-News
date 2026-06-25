@@ -257,6 +257,50 @@
     animation: bookmarkPop 0.3s ease;
 }
 
+
+
+/* Лайки комментариев */
+.comment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+
+.comment-like-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.comment-like-btn:hover {
+    border-color: #df1b1b;
+    color: #df1b1b;
+}
+
+.comment-like-btn.active {
+    background: rgba(223, 27, 27, 0.1);
+    border-color: #df1b1b;
+    color: #df1b1b;
+}
+
+.comment-like-btn i {
+    font-size: 14px;
+}
+
+.comment-like-count {
+    font-weight: bold;
+}
+
 @keyframes heartBeat {
     0% { transform: scale(1); }
     50% { transform: scale(1.3); }

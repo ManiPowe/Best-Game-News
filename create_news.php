@@ -14,7 +14,7 @@ mysqli_stmt_execute($stmt_role);
 $result_role = mysqli_stmt_get_result($stmt_role);
 $user_role = mysqli_fetch_assoc($result_role)['role'];
 
-if ($user_role !== 'creator' && $user_role !== 'admin') {
+if ($user_role !== 'creator' && $user_role !== 'moderator' && $user_role !== 'admin') {
     header("Location: index.php");
     exit;
 }
@@ -82,13 +82,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Создать новость - Best Game News</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/create_news.css">
-        <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/JS/category_games.js"></script>
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    
+    // Получаем роль пользователя ОДИН раз
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $check_role_sql = "SELECT role FROM users WHERE id = ?";
+        $stmt_role = mysqli_prepare($conn, $check_role_sql);
+        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($stmt_role);
+        $result_role = mysqli_stmt_get_result($stmt_role);
+        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
+    }
+    ?>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -99,18 +118,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
+                <a href="category.php?type=games">Игры</a>
+                <a href="category.php?type=news">Новости</a>
+                <a href="category.php?type=articles">Статьи</a>
+                <a href="category.php?type=videos">Видео</a>
+                <a href="category.php?type=walkthroughs">Прохождения</a>
+                <a href="help.php">Помощь</a>
+
+                <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                    <button type="submit" class="search-btn">
+                        <img src="/assets/Media/Photo/search.png" alt="Поиск">
+                    </button>
+                </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
+                                alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
                         <a href="login.php">

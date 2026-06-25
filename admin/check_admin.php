@@ -7,17 +7,17 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$check_sql = "SELECT role, login, avatar FROM users WHERE id = ?";
-$stmt = mysqli_prepare($conn, $check_sql);
-mysqli_stmt_bind_param($stmt, "i", $_SESSION['user_id']);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$admin_user = mysqli_fetch_assoc($result);
+// Получаем роль из БД
+$check_sql = "SELECT role FROM users WHERE id = ?";
+$check_stmt = mysqli_prepare($conn, $check_sql);
+mysqli_stmt_bind_param($check_stmt, "i", $_SESSION['user_id']);
+mysqli_stmt_execute($check_stmt);
+$user_data = mysqli_fetch_assoc(mysqli_stmt_get_result($check_stmt));
 
-if (!$admin_user || !in_array($admin_user['role'], ['admin', 'moderator'])) {
+if (!in_array($user_data['role'] ?? '', ['admin', 'moderator'])) {
     header("Location: ../index.php");
     exit;
 }
 
-$_SESSION['admin_role'] = $admin_user['role'];
+$admin_user = $user_data;
 ?>

@@ -1,6 +1,9 @@
 <?php
 session_start();
 require_once 'assets/app/db.php';
+// Подключаем функции уведомлений
+require_once 'assets/app/notifications.php';
+$unread_count = getUnreadCount($conn, $user_id);
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -61,7 +64,26 @@ $current_tab = $_GET['tab'] ?? 'settings';
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/js/file_input.js"></script>
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    
+    // Получаем роль пользователя ОДИН раз
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $check_role_sql = "SELECT role FROM users WHERE id = ?";
+        $stmt_role = mysqli_prepare($conn, $check_role_sql);
+        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($stmt_role);
+        $result_role = mysqli_stmt_get_result($stmt_role);
+        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
+    }
+    ?>
+
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -71,16 +93,30 @@ $current_tab = $_GET['tab'] ?? 'settings';
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
+                <a href="index.php">Главная</a>
+                <a href="category.php?type=games">Игры</a>
+                <a href="category.php?type=news">Новости</a>
+                <a href="category.php?type=articles">Статьи</a>
+                <a href="category.php?type=videos">Видео</a>
+                <a href="category.php?type=walkthroughs">Прохождения</a>
+                <a href="help.php">Помощь</a>
+
+                <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
+
+                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
+                <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="#" method="get">
-                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
                         <img src="/assets/Media/Photo/search.png" alt="Поиск">
                     </button>
@@ -88,7 +124,8 @@ $current_tab = $_GET['tab'] ?? 'settings';
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
+                                alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
                         <a href="login.php">
@@ -125,6 +162,9 @@ $current_tab = $_GET['tab'] ?? 'settings';
                 <a href="?tab=notifications" class="menu-item <?= $current_tab === 'notifications' ? 'active' : '' ?>">
                     <i class="fas fa-bell"></i>
                     <span>Уведомления</span>
+                    <?php if ($unread_count > 0): ?>
+                        <span class="menu-badge"><?= $unread_count ?></span>
+                    <?php endif; ?>
                 </a>
                 <a href="assets/app/logout.php" class="menu-item">
                     <i class="fas fa-sign-out-alt"></i>
@@ -286,17 +326,16 @@ $current_tab = $_GET['tab'] ?? 'settings';
 
                         <?php if (!empty($favorites)): ?>
                             <div class="favorites-list">
-                                <?php foreach ($favorites as $fav): ?>
+                                <?php foreach ($favorites as $fav):
+                                    // Проверяем существует ли файл картинки
+                                    $image_path = $fav['image'] ?? '';
+                                    $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
+                                    $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
+                                    ?>
                                     <a href="news.php?id=<?= $fav['id'] ?>" class="favorite-card">
                                         <div class="favorite-cover">
-                                            <?php if ($fav['image']): ?>
-                                                <img src="<?= htmlspecialchars($fav['image']) ?>"
-                                                    alt="<?= htmlspecialchars($fav['title']) ?>">
-                                            <?php else: ?>
-                                                <div class="cover-placeholder">
-                                                    <i class="fas fa-newspaper"></i>
-                                                </div>
-                                            <?php endif; ?>
+                                            <img src="<?= htmlspecialchars($display_image) ?>"
+                                                alt="<?= htmlspecialchars($fav['title']) ?>">
 
                                             <?php if ($fav['game_name']): ?>
                                                 <div class="game-badge">
@@ -360,12 +399,150 @@ $current_tab = $_GET['tab'] ?? 'settings';
                     <!-- ВКЛАДКА КОММЕНТАРИЕВ -->
                     <!-- ========================================== -->
                     <div class="content-header">
-                        <h2><i class="fas fa-comments"></i> Мои комментарии</h2>
+                        <h2><i class="fas fa-comments"></i> Комментарии</h2>
                     </div>
-                    <div class="empty-tab">
-                        <i class="fas fa-comments"></i>
-                        <p>Раздел в разработке</p>
+
+                    <?php
+                    // Получаем комментарии пользователя
+                    $my_comments_sql = "SELECT c.*, n.title as news_title, n.id as news_id 
+                        FROM comments c 
+                        JOIN news n ON c.news_id = n.id 
+                        WHERE c.user_id = ? 
+                        ORDER BY c.created_at DESC 
+                        LIMIT 50";
+                    $my_comments_stmt = mysqli_prepare($conn, $my_comments_sql);
+                    mysqli_stmt_bind_param($my_comments_stmt, "i", $user_id);
+                    mysqli_stmt_execute($my_comments_stmt);
+                    $my_comments_result = mysqli_stmt_get_result($my_comments_stmt);
+                    $my_comments = [];
+                    while ($comment = mysqli_fetch_assoc($my_comments_result)) {
+                        $my_comments[] = $comment;
+                    }
+
+                    // Получаем комментарии на посты пользователя (от других пользователей)
+                    $replies_sql = "SELECT c.*, u.login as author_login, u.avatar as author_avatar, 
+                           n.title as news_title, n.id as news_id 
+                    FROM comments c 
+                    JOIN users u ON c.user_id = u.id 
+                    JOIN news n ON c.news_id = n.id 
+                    WHERE n.author_id = ? AND c.user_id != ? 
+                    ORDER BY c.created_at DESC 
+                    LIMIT 50";
+                    $replies_stmt = mysqli_prepare($conn, $replies_sql);
+                    mysqli_stmt_bind_param($replies_stmt, "ii", $user_id, $user_id);
+                    mysqli_stmt_execute($replies_stmt);
+                    $replies_result = mysqli_stmt_get_result($replies_stmt);
+                    $replies = [];
+                    while ($reply = mysqli_fetch_assoc($replies_result)) {
+                        $replies[] = $reply;
+                    }
+                    ?>
+
+                    <div class="comments-tabs">
+                        <button class="comments-tab-btn active" data-tab="my-comments">
+                            <i class="fas fa-comment"></i> Мои комментарии (<?= count($my_comments) ?>)
+                        </button>
+                        <button class="comments-tab-btn" data-tab="my-replies">
+                            <i class="fas fa-reply"></i> Ответы на мои посты (<?= count($replies) ?>)
+                        </button>
                     </div>
+
+                    <!-- Мои комментарии -->
+                    <div class="comments-section active" id="my-comments">
+                        <?php if (!empty($my_comments)): ?>
+                            <div class="comments-list">
+                                <?php foreach ($my_comments as $comment): ?>
+                                    <div class="comment-card">
+                                        <div class="comment-header">
+                                            <a href="news.php?id=<?= $comment['news_id'] ?>" class="comment-news-link">
+                                                <i class="fas fa-newspaper"></i>
+                                                <?= htmlspecialchars($comment['news_title']) ?>
+                                            </a>
+                                            <span class="comment-date">
+                                                <?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?>
+                                            </span>
+                                        </div>
+                                        <div class="comment-text">
+                                            <?= nl2br(htmlspecialchars($comment['text'])) ?>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <span class="comment-likes">
+                                                <i class="fas fa-heart"></i>
+                                                <span><?= $comment['likes_count'] ?? 0 ?></span>
+                                            </span>
+                                            <a href="news.php?id=<?= $comment['news_id'] ?>#comment-<?= $comment['id'] ?>"
+                                                class="view-btn">
+                                                <i class="fas fa-external-link-alt"></i> Перейти к новости
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-comments">
+                                <i class="fas fa-comment-slash"></i>
+                                <p>Вы пока не оставляли комментариев</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Ответы на мои посты -->
+                    <div class="comments-section" id="my-replies">
+                        <?php if (!empty($replies)): ?>
+                            <div class="comments-list">
+                                <?php foreach ($replies as $reply): ?>
+                                    <div class="comment-card reply-card">
+                                        <div class="comment-header">
+                                            <div class="reply-author">
+                                                <img src="<?= htmlspecialchars($reply['author_avatar']) ?>" alt="Автор"
+                                                    class="reply-avatar">
+                                                <span class="reply-name"><?= htmlspecialchars($reply['author_login']) ?></span>
+                                            </div>
+                                            <a href="news.php?id=<?= $reply['news_id'] ?>" class="comment-news-link">
+                                                <i class="fas fa-newspaper"></i>
+                                                <?= htmlspecialchars($reply['news_title']) ?>
+                                            </a>
+                                        </div>
+                                        <div class="comment-text">
+                                            <?= nl2br(htmlspecialchars($reply['text'])) ?>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <span class="comment-date">
+                                                <?= date('d.m.Y H:i', strtotime($reply['created_at'])) ?>
+                                            </span>
+                                            <a href="news.php?id=<?= $reply['news_id'] ?>#comment-<?= $reply['id'] ?>"
+                                                class="view-btn">
+                                                <i class="fas fa-external-link-alt"></i> Перейти к новости
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-comments">
+                                <i class="fas fa-comment-slash"></i>
+                                <p>На ваши посты пока никто не комментировал</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <script>
+                        // Переключение вкладок комментариев
+                        document.querySelectorAll('.comments-tab-btn').forEach(btn => {
+                            btn.addEventListener('click', function () {
+                                // Убираем active у всех кнопок
+                                document.querySelectorAll('.comments-tab-btn').forEach(b => b.classList.remove('active'));
+                                // Убираем active у всех секций
+                                document.querySelectorAll('.comments-section').forEach(s => s.classList.remove('active'));
+
+                                // Добавляем active к нажатой кнопке
+                                this.classList.add('active');
+                                // Показываем соответствующую секцию
+                                const tabId = this.getAttribute('data-tab');
+                                document.getElementById(tabId).classList.add('active');
+                            });
+                        });
+                    </script>
 
                 <?php elseif ($current_tab === 'notifications'): ?>
                     <!-- ========================================== -->
@@ -374,9 +551,65 @@ $current_tab = $_GET['tab'] ?? 'settings';
                     <div class="content-header">
                         <h2><i class="fas fa-bell"></i> Уведомления</h2>
                     </div>
-                    <div class="empty-tab">
-                        <i class="fas fa-bell"></i>
-                        <p>Раздел в разработке</p>
+
+                    <?php
+                    // Получаем все уведомления пользователя
+                    $notifications_sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50";
+                    $notif_stmt = mysqli_prepare($conn, $notifications_sql);
+                    mysqli_stmt_bind_param($notif_stmt, "i", $user_id);
+                    mysqli_stmt_execute($notif_stmt);
+                    $notifications_result = mysqli_stmt_get_result($notif_stmt);
+                    $notifications = [];
+                    while ($notif = mysqli_fetch_assoc($notifications_result)) {
+                        $notifications[] = $notif;
+                    }
+
+                    // Отмечаем все как прочитанные
+                    if (!empty($notifications)) {
+                        markAllAsRead($conn, $user_id);
+                    }
+                    ?>
+
+                    <div class="notifications-container">
+                        <?php if (!empty($notifications)): ?>
+                            <div class="notifications-list">
+                                <?php foreach ($notifications as $notif): ?>
+                                    <div class="notification-card <?= $notif['is_read'] ? '' : 'unread' ?>">
+                                        <div class="notification-icon">
+                                            <?php
+                                            switch ($notif['type']) {
+                                                case 'post_approved':
+                                                    echo '<i class="fas fa-check-circle" style="color: #4CAF50;"></i>';
+                                                    break;
+                                                case 'post_rejected':
+                                                    echo '<i class="fas fa-times-circle" style="color: #f44336;"></i>';
+                                                    break;
+                                                case 'post_deleted':
+                                                    echo '<i class="fas fa-trash" style="color: #ff9800;"></i>';
+                                                    break;
+                                                case 'warning':
+                                                    echo '<i class="fas fa-exclamation-triangle" style="color: #ff9800;"></i>';
+                                                    break;
+                                                default:
+                                                    echo '<i class="fas fa-bell" style="color: #2196F3;"></i>';
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="notification-content">
+                                            <p><?= htmlspecialchars($notif['message']) ?></p>
+                                            <span class="notification-date">
+                                                <?= date('d.m.Y H:i', strtotime($notif['created_at'])) ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="empty-notifications">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>У вас пока нет уведомлений</p>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                 <?php endif; ?>

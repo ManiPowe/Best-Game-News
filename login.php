@@ -17,11 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($user && password_verify($password, $user['password'])) {
         session_regenerate_id(true);
-        
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['login'] = $user['login'];
         $_SESSION['avatar'] = $user['avatar'];
-        
+
         header("Location: index.php");
         exit;
     } else {
@@ -31,16 +31,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/reg.css">  
+    <link rel="stylesheet" href="css/reg.css">
 
     <link rel="icon" href="/assets/Media/Photo/asd.png">
     <title>Вход - Best Game News</title>
 </head>
+
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
     <header>
         <div class="header">
             <div class="logo-wrap">
@@ -61,7 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="auth-container">
                 <h2>Вход</h2>
                 <?php if ($error): ?>
-                    <p style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;"><?= htmlspecialchars($error) ?></p>
+                    <p
+                        style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;">
+                        <?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
                 <form class="auth-form" method="POST" action="login.php">
                     <div class="form-group">
@@ -111,4 +117,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </footer>
 </body>
+
 </html>

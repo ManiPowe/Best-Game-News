@@ -88,3 +88,45 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+
+
+// Лайки комментариев (для news.php и profile.php)
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.comment-like-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const commentId = this.dataset.commentId;
+            const countSpan = this.querySelector('.comment-like-count');
+            const btn = this;
+
+            fetch('/assets/app/toggle_comment_like.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ comment_id: commentId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        countSpan.textContent = data.likes_count;
+
+                        if (data.liked) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    } else {
+                        alert(data.message || 'Ошибка');
+                        if (data.message === 'Необходимо войти в систему') {
+                            redirectToLogin();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при обработке запроса');
+                });
+        });
+    });
+});

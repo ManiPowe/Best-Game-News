@@ -16,9 +16,28 @@ require_once 'assets/app/db.php';
 </head>
 
 <body>
+    <script src="/assets/js/theme-init.js"></script>
+    <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/js/theme.js" defer></script>
     <script src="/assets/js/news_actions.js"></script>
     <script src="/assets/JS/main_slider.js"></script>
+
+    <?php
+    // Убедись что в самом начале файла есть:
+// session_start();
+// require_once 'assets/app/db.php';
+    
+    // Получаем роль пользователя ОДИН раз
+    $user_role = null;
+    if (isset($_SESSION['user_id'])) {
+        $check_role_sql = "SELECT role FROM users WHERE id = ?";
+        $stmt_role = mysqli_prepare($conn, $check_role_sql);
+        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
+        mysqli_stmt_execute($stmt_role);
+        $result_role = mysqli_stmt_get_result($stmt_role);
+        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
+    }
+    ?>
 
     <header>
         <div class="header">
@@ -30,39 +49,52 @@ require_once 'assets/app/db.php';
             </div>
             <nav class="nav">
                 <a href="index.php">Главная</a>
-                <a href="#">Игры</a>
-                <a href="#">Новости</a>
-                <a href="#">Статьи</a>
-                <a href="#">Видео</a>
-                <a href="#">Прохождения</a>
-                <a href="#">Помощь</a>
+                <a href="category.php?type=games">Игры</a>
+                <a href="category.php?type=news">Новости</a>
+                <a href="category.php?type=articles">Статьи</a>
+                <a href="category.php?type=videos">Видео</a>
+                <a href="category.php?type=walkthroughs">Прохождения</a>
+                <a href="help.php">Помощь</a>
 
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <?php
-                    $check_role_sql = "SELECT role FROM users WHERE id = ?";
-                    $stmt_role = mysqli_prepare($conn, $check_role_sql);
-                    mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
-                    mysqli_stmt_execute($stmt_role);
-                    $result_role = mysqli_stmt_get_result($stmt_role);
-                    $user_role = mysqli_fetch_assoc($result_role)['role'];
+                <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
+                    <a href="admin/admin.php" class="admin-link">
+                        <i class="fas fa-shield-alt"></i> Админ панель
+                    </a>
+                <?php endif; ?>
 
-                    if ($user_role === 'creator' || $user_role === 'admin'):
-                        ?>
-                        <a href="create_news.php" class="create-news-btn"> Создать новость</a>
-                    <?php endif; ?>
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="create_news.php" class="create-news-btn">
+                        <i class="fas fa-plus"></i> Создать пост
+                    </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="#" method="get">
-                    <input type="search" name="text" class="search-input" placeholder=" Поиск...">
+                <form action="search.php" method="get" class="search-form">
+                    <input type="search" name="q" class="search-input" placeholder=" Поиск..."
+                        value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
                         <img src="/assets/Media/Photo/search.png" alt="Поиск">
                     </button>
                 </form>
+                <?php
+                require_once __DIR__ . '/assets/app/notifications.php';
+                $unread_count = isset($_SESSION['user_id']) ? getUnreadCount($conn, $_SESSION['user_id']) : 0;
+                ?>
+
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <div class="header-notifications">
+                            <a href="cab.php?tab=notifications" class="notification-bell">
+                                <i class="fas fa-bell"></i>
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="notification-badge"><?= $unread_count ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+
                         <a href="cab.php" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar']) ?>" alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
+                                alt="Профиль" class="header-avatar">
                         </a>
                     <?php else: ?>
                         <a href="login.php">
@@ -84,10 +116,10 @@ require_once 'assets/app/db.php';
                         <h3>Популярные авторы</h3>
                         <?php
                         $sql = "SELECT u.id, u.login, u.avatar, u.comments_count,
-                               (SELECT COUNT(*) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as posts_count,
-                               (SELECT MAX(n.likes_count) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as top_liked_post
+                        (SELECT COUNT(*) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as posts_count,
+                        (SELECT MAX(n.likes_count) FROM news n WHERE n.author_id = u.id AND n.status = 'published') as top_liked_post
                         FROM users u
-                        WHERE u.role IN ('creator', 'admin')
+                        WHERE u.role IN ('creator', 'moderator', 'admin')
                         HAVING posts_count > 0
                         ORDER BY posts_count DESC 
                         LIMIT 10";
@@ -122,36 +154,61 @@ require_once 'assets/app/db.php';
                     <div class="hero-section">
                         <div class="hero-slider">
                             <div class="slider-container">
-                                <div class="hero-card slide active">
-                                    <img src="/assets/Media/Photo/dota2.png" loading="lazy" alt="DOTA 2">
-                                    <div class="hero-text">
-                                        <h2>DOTA 2</h2>
-                                        <p>В игре DOTA 2 стартовал новый ивент, приуроченный коллаборацией DOTA 2 X
-                                            Monster Hunter!</p>
-                                        <a href="#">Подробнее...</a>
+                                <?php
+                                // Получаем избранные новости для слайдера
+                                $slider_sql = "SELECT n.*, u.login as author_login 
+                           FROM news n 
+                           JOIN users u ON n.author_id = u.id 
+                           WHERE n.is_featured = 1 AND n.status = 'published' 
+                           ORDER BY n.created_at DESC 
+                           LIMIT 15";
+                                $slider_result = mysqli_query($conn, $slider_sql);
+
+                                $has_featured = $slider_result && mysqli_num_rows($slider_result) > 0;
+                                $slide_index = 0;
+
+                                if ($has_featured):
+                                    while ($slide = mysqli_fetch_assoc($slider_result)):
+                                        $image_path = $slide['image'] ?? '';
+                                        $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
+                                        $display_image = $image_exists ? '/' . ltrim($image_path, '/') : '/assets/Media/Photo/Заглушка.jpg';
+                                        $active_class = $slide_index === 0 ? 'active' : '';
+                                        ?>
+                                        <div class="hero-card slide <?= $active_class ?>">
+                                            <img src="<?= htmlspecialchars($display_image) ?>" loading="lazy"
+                                                alt="<?= htmlspecialchars($slide['title']) ?>">
+                                            <div class="hero-text">
+                                                <h2>
+                                                    <?= htmlspecialchars($slide['title']) ?>
+                                                </h2>
+                                                <p>
+                                                    <?= htmlspecialchars(mb_substr($slide['short_description'] ?? $slide['content'], 0, 150)) ?>...
+                                                </p>
+                                                <a href="news.php?id=<?= $slide['id'] ?>">Подробнее...</a>
+                                            </div>
+                                        </div>
+                                        <?php
+                                        $slide_index++;
+                                    endwhile;
+                                else:
+                                    // Если избранных нет — показываем дефолтные слайды
+                                    ?>
+                                    <div class="hero-card slide active">
+                                        <img src="/assets/Media/Photo/Заглушка.jpg" loading="lazy" alt="DOTA 2">
+                                        <div class="hero-text">
+                                            <h2>Добро пожаловать!</h2>
+                                            <p>Добавьте новости в слайдер через админ-панель, чтобы они появились здесь</p>
+                                            <a href="admin/admin.php?tab=featured">Перейти в админку</a>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="hero-card slide">
-                                    <img src="/assets/Media/Photo/atomic_heart_sl.jpg" loading="lazy"
-                                        alt="Atomic Heart">
-                                    <div class="hero-text">
-                                        <h2>Atomic Heart</h2>
-                                        <p>Mundfish показала парочку скриншотов грядущего дополнения DLC для Atomic
-                                            Heart</p>
-                                        <a href="#">Подробнее...</a>
-                                    </div>
-                                </div>
-                                <div class="hero-card slide">
-                                    <img src="/assets/Media/Photo/Calofduty.jpg" loading="lazy" alt="Call of Duty">
-                                    <div class="hero-text">
-                                        <h2>Call of Duty</h2>
-                                        <p>Вышел новый трейлер MWIII</p>
-                                        <a href="#">Подробнее...</a>
-                                    </div>
-                                </div>
+                                <?php endif; ?>
                             </div>
-                            <button class="slider-btn prev-btn" aria-label="Предыдущий слайд">&lt;</button>
-                            <button class="slider-btn next-btn" aria-label="Следующий слайд">&gt;</button>
+                            <button class="slider-btn prev-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="slider-btn next-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                             <div class="slider-indicators"></div>
                         </div>
                     </div>
@@ -190,14 +247,14 @@ require_once 'assets/app/db.php';
                                                 onclick="window.location.href='news.php?id=<?= $news['id'] ?>'"
                                                 style="cursor: pointer;">
                                                 <div class="todays-image">
-                                                    <?php if ($news['image']): ?>
-                                                        <img src="<?= htmlspecialchars($news['image']) ?>"
-                                                            alt="<?= htmlspecialchars($news['title']) ?>">
-                                                    <?php else: ?>
-                                                        <div class="todays-image-placeholder">
-                                                            <i class="fas fa-newspaper"></i>
-                                                        </div>
-                                                    <?php endif; ?>
+                                                    <?php
+                                                    // Проверяем существует ли файл картинки
+                                                    $image_path = $news['image'] ?? '';
+                                                    $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
+                                                    $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
+                                                    ?>
+                                                    <img src="<?= htmlspecialchars($display_image) ?>"
+                                                        alt="<?= htmlspecialchars($news['title']) ?>">
 
                                                     <?php if ($news['game_name']): ?>
                                                         <div class="game-badge">
@@ -275,79 +332,27 @@ require_once 'assets/app/db.php';
 
                         <div class="marquee-viewport">
                             <div class="marquee-content">
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">DOTA 2</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-дота-2.svg" alt="DOTA 2">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Counter-Strike 2</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-counter-strike.svg"
-                                        alt="Counter-Strike 2">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Valorant</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-valorant.svg" alt="Valorant">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Apex Legends</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-riot-games.svg"
-                                        alt="Apex Legends">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Fortnite</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-fortnite.svg" alt="Fortnite">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Call of Duty</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-call-of-duty-black-ops-3.svg"
-                                        alt="Call of Duty">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">League of Legends</span>
-                                    <img class="game-icon"
-                                        src="/assets/Media/ico/icons8-адский-дракон-league-of-legends.svg"
-                                        alt="League of Legends">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Overwatch 2</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-overwatch.svg"
-                                        alt="Overwatch 2">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Genshin Impact</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-genshin-impact-logo.svg"
-                                        alt="Genshin Impact">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">World of Warcraft</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-world-of-warcraft.svg"
-                                        alt="World of Warcraft">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Among Us</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-among-us.svg" alt="Among Us">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Minecraft</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-куб-травы-из-minecraft.svg"
-                                        alt="Minecraft">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Grand Theft Auto V</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-grand-theft-auto-v.svg"
-                                        alt="Grand Theft Auto V">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">Red Dead Redemption 2</span>
-                                    <img class="game-icon"
-                                        src="/assets/Media/ico/red-dead-redemption-2-wordmark-light.svg"
-                                        alt="Red Dead Redemption 2">
-                                </a>
-                                <a href="#" class="marquee-item">
-                                    <span class="game-name">The Witcher 3</span>
-                                    <img class="game-icon" src="/assets/Media/ico/icons8-ведьмак-2.svg"
-                                        alt="The Witcher 3">
-                                </a>
+                                <?php
+                                // Получаем популярные игры из БД
+                                $popular_games_sql = "SELECT id, name, icon FROM games ORDER BY id ASC LIMIT 15";
+                                $popular_games_result = mysqli_query($conn, $popular_games_sql);
+
+                                if ($popular_games_result && mysqli_num_rows($popular_games_result) > 0):
+                                    while ($game = mysqli_fetch_assoc($popular_games_result)):
+                                        ?>
+                                        <a href="category.php?type=games&game_id=<?= $game['id'] ?>" class="marquee-item">
+                                            <span class="game-name"><?= htmlspecialchars($game['name']) ?></span>
+                                            <?php if ($game['icon']): ?>
+                                                <img class="game-icon" src="<?= htmlspecialchars($game['icon']) ?>"
+                                                    alt="<?= htmlspecialchars($game['name']) ?>">
+                                            <?php endif; ?>
+                                        </a>
+                                        <?php
+                                    endwhile;
+                                else:
+                                    ?>
+                                    <p style="color: #777; text-align: center; padding: 20px;">Нет популярных игр</p>
+                                <?php endif; ?>
                             </div>
                         </div>
 

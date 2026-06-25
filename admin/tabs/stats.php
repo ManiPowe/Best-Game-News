@@ -19,14 +19,13 @@ $online_result = mysqli_query($conn, $online_sql);
 $users_online = mysqli_fetch_assoc($online_result)['c'] ?? 0;
 
 // Топ авторов по количеству новостей
-$top_authors_sql = "SELECT u.login, u.avatar, COUNT(n.id) as news_count 
+$top_authors_sql = "SELECT u.*, COUNT(n.id) as posts_count, COALESCE(SUM(n.likes_count), 0) as total_likes 
                     FROM users u 
                     LEFT JOIN news n ON u.id = n.author_id AND n.status = 'published' 
-                    WHERE u.role IN ('creator', 'moderator', 'admin') 
                     GROUP BY u.id 
-                    HAVING news_count > 0
-                    ORDER BY news_count DESC 
-                    LIMIT 5";
+                    HAVING posts_count > 0 
+                    ORDER BY total_likes DESC 
+                    LIMIT 10";
 $top_authors_result = mysqli_query($conn, $top_authors_sql);
 ?>
 
