@@ -92,9 +92,9 @@ $is_logged_in = isset($_SESSION['user_id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($news['title']) ?> - Best Game News</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/news.css">
-    <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/news.css">
+    <link rel="stylesheet" href="/css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
@@ -122,13 +122,13 @@ $is_logged_in = isset($_SESSION['user_id']);
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/index.php">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/index.php">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -143,7 +143,7 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                    <a href="/create_news.php" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
@@ -158,9 +158,15 @@ $is_logged_in = isset($_SESSION['user_id']);
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
                         <a href="/cab" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>" alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
                         <a href="/login">
@@ -193,17 +199,31 @@ $is_logged_in = isset($_SESSION['user_id']);
 
                 <div class="news-meta">
                     <a href="/profile/<?= $news['author_id'] ?>" class="news-author">
-                        <img src="<?= htmlspecialchars($news['author_avatar']) ?>" alt="Автор">
+                        <?php
+                        $author_avatar = $news['author_avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($author_avatar, 'http') !== 0 && strpos($author_avatar, '/') !== 0) {
+                            $author_avatar = '/' . $author_avatar;
+                        }
+                        ?>
+                        <img src="<?= htmlspecialchars($author_avatar) ?>" alt="Автор"
+                            onerror="this.src='/assets/Media/Photo/man.png'">
                         <span><?= htmlspecialchars($news['author_login']) ?></span>
                     </a>
                     <span class="news-date"><?= date('d.m.Y H:i', strtotime($news['created_at'])) ?></span>
                     <span class="news-views"><i class="fas fa-eye"></i> <?= $news['views'] ?></span>
                 </div>
 
-                <?php if ($news['image']): ?>
-                    <img src="<?= htmlspecialchars($news['image']) ?>" alt="<?= htmlspecialchars($news['title']) ?>"
-                        class="news-image">
-                <?php endif; ?>
+                <?php
+                $news_image = $news['image'] ?? '';
+                if ($news_image && strpos($news_image, 'http') !== 0 && strpos($news_image, '/') !== 0) {
+                    $news_image = '/' . $news_image;
+                }
+                $image_file = $_SERVER['DOCUMENT_ROOT'] . $news_image;
+                $image_exists = $news_image && file_exists($image_file);
+                $display_image = $image_exists ? $news_image : '/assets/Media/Photo/Заглушка.jpg';
+                ?>
+                <img src="<?= htmlspecialchars($display_image) ?>" alt="<?= htmlspecialchars($news['title']) ?>"
+                    class="news-image" onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
 
                 <div class="news-content">
                     <?= nl2br(htmlspecialchars($news['content'])) ?>
@@ -289,7 +309,14 @@ $is_logged_in = isset($_SESSION['user_id']);
                             <div class="comment-card">
                                 <div class="comment-header">
                                     <a href="/profile/<?= $comment['user_id'] ?>" class="comment-author">
-                                        <img src="<?= htmlspecialchars($comment['avatar']) ?>" alt="Автор">
+                                        <?php
+                                        $comment_avatar = $comment['avatar'] ?? '/assets/Media/Photo/man.png';
+                                        if (strpos($comment_avatar, 'http') !== 0 && strpos($comment_avatar, '/') !== 0) {
+                                            $comment_avatar = '/' . $comment_avatar;
+                                        }
+                                        ?>
+                                        <img src="<?= htmlspecialchars($comment_avatar) ?>" alt="Автор"
+                                            onerror="this.src='/assets/Media/Photo/man.png'">
                                         <span><?= htmlspecialchars($comment['login']) ?></span>
                                     </a>
                                     <span

@@ -31,6 +31,9 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
 
 <div class="content-header">
     <h2><i class="fas fa-chart-bar"></i> Статистика сайта</h2>
+    <a href="tabs/stats_pdf.php" class="btn-export-pdf" target="_blank">
+        <i class="fas fa-file-pdf"></i> Экспорт в PDF
+    </a>
 </div>
 
 <div class="admin-stats-layout">
@@ -46,7 +49,7 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
                     <div class="stat-change">+<?= $stats['news_today'] ?> сегодня</div>
                 </div>
             </div>
-            
+
             <div class="stat-card-main users-stat">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <div class="stat-info">
@@ -55,7 +58,7 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
                     <div class="stat-change">+<?= $stats['users_today'] ?> новых</div>
                 </div>
             </div>
-            
+
             <div class="stat-card-main comments-stat">
                 <div class="stat-icon"><i class="fas fa-comments"></i></div>
                 <div class="stat-info">
@@ -64,7 +67,7 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
                     <div class="stat-change">+<?= $stats['comments_today'] ?> сегодня</div>
                 </div>
             </div>
-            
+
             <div class="stat-card-main moderation-stat">
                 <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div class="stat-info">
@@ -94,7 +97,7 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
                     </div>
                 </div>
             </div>
-            
+
             <div class="stat-detail-card">
                 <h3><i class="fas fa-percentage"></i> Показатели</h3>
                 <div class="detail-stats">
@@ -104,7 +107,8 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Комментов на пост</span>
-                        <span class="detail-value"><?= $stats['news_total'] > 0 ? round($stats['comments_total'] / $stats['news_total'], 1) : 0 ?></span>
+                        <span
+                            class="detail-value"><?= $stats['news_total'] > 0 ? round($stats['comments_total'] / $stats['news_total'], 1) : 0 ?></span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Пользователей онлайн</span>
@@ -120,18 +124,20 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
         <div class="stats-section">
             <h3><i class="fas fa-trophy"></i> Топ авторов</h3>
             <div class="top-authors-list">
-                <?php 
+                <?php
                 $medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
                 $counter = 0;
-                while ($author = mysqli_fetch_assoc($top_authors_result)): 
+                while ($author = mysqli_fetch_assoc($top_authors_result)):
                     $counter++;
-                ?>
+                    ?>
                     <div class="top-author-card">
                         <div class="author-rank"><?= $medals[$counter - 1] ?? $counter ?></div>
-                        <img src="../<?= htmlspecialchars($author['avatar']) ?>" alt="<?= htmlspecialchars($author['login']) ?>">
+                        <img src="../<?= htmlspecialchars($author['avatar']) ?>"
+                            alt="<?= htmlspecialchars($author['login']) ?>">
                         <div class="top-author-info">
                             <h4><?= htmlspecialchars($author['login']) ?></h4>
-                            <span><?= $author['news_count'] ?> <?= $author['news_count'] == 1 ? 'пост' : ($author['news_count'] < 5 ? 'поста' : 'постов') ?></span>
+                            <span><?= $author['posts_count'] ?>
+                                <?= $author['posts_count'] == 1 ? 'пост' : ($author['posts_count'] < 5 ? 'поста' : 'постов') ?></span>
                         </div>
                     </div>
                 <?php endwhile; ?>

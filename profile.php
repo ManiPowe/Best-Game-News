@@ -90,9 +90,9 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль <?= htmlspecialchars($user['login']) ?> - Best Game News</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/profile.css">
-    <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
@@ -120,13 +120,13 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="../index.php">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="../index.php">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -135,13 +135,13 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user['role'] === 'moderator' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="../admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                    <a href="../create_news.php" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
@@ -156,9 +156,15 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
                         <a href="/cab" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>" alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
                         <a href="/login">
@@ -181,11 +187,18 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                             <div class="profile-header">
                                 <div class="profile-header-left">
                                     <div class="avatar">
-                                        <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
+                                        <?php
+                                        $avatar_path = $user['avatar'] ?? '';
+                                        if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
+                                            $avatar_path = '/' . $avatar_path;
+                                        }
+                                        ?>
+                                        <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png'): ?>
                                             <i class="fas fa-user"></i>
                                         <?php else: ?>
-                                            <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар"
-                                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                            <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
+                                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                                                onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -260,8 +273,8 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                             $is_author = ($is_logged_in && $_SESSION['user_id'] == $target_user_id);
 
                             $posts_sql = "SELECT id, title, image, status, created_at 
-              FROM news 
-              WHERE author_id = ?";
+                            FROM news 
+                            WHERE author_id = ?";
 
                             if (!$is_author) {
                                 $posts_sql .= " AND status = 'published'";
@@ -283,15 +296,20 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                                 <div class="user-posts-list">
                                     <?php foreach ($posts as $post): ?>
                                         <div class="user-post-card-wrapper">
-                                            <a href="news.php?id=<?= $post['id'] ?>" class="user-post-card">
-                                                <?php if ($post['image']): ?>
-                                                    <img src="<?= htmlspecialchars($post['image']) ?>"
-                                                        alt="<?= htmlspecialchars($post['title']) ?>" class="post-cover">
-                                                <?php else: ?>
-                                                    <div class="post-cover-placeholder">
-                                                        <i class="fas fa-newspaper"></i>
-                                                    </div>
-                                                <?php endif; ?>
+                                            <a href="/news/<?= $post['id'] ?>" class="user-post-card">
+                                                <?php
+                                                $post_image = $post['image'] ?? '';
+                                                if ($post_image && strpos($post_image, 'http') !== 0 && strpos($post_image, '/') !== 0) {
+                                                    $post_image = '/' . $post_image;
+                                                }
+                                                $image_file = $_SERVER['DOCUMENT_ROOT'] . $post_image;
+                                                $image_exists = $post_image && file_exists($image_file);
+                                                $display_image = $image_exists ? $post_image : '/assets/Media/Photo/Заглушка.jpg';
+                                                ?>
+                                                <img src="<?= htmlspecialchars($display_image) ?>"
+                                                    alt="<?= htmlspecialchars($post['title']) ?>" class="post-cover"
+                                                    onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
+
                                                 <div class="post-info">
                                                     <h4><?= htmlspecialchars($post['title']) ?></h4>
 
@@ -319,14 +337,13 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                                             </a>
 
                                             <?php
-                                            // Показываем кнопки если: это автор ИЛИ текущий пользователь — админ/модер
                                             $can_manage_post = $is_author || in_array($user_role, ['admin', 'moderator']);
                                             ?>
 
                                             <?php if ($can_manage_post): ?>
                                                 <div class="post-actions">
                                                     <?php if ($is_author && $post['status'] === 'draft'): ?>
-                                                        <form action="assets/app/publish_news.php" method="POST" style="display: inline;">
+                                                        <form action="/assets/app/publish_news.php" method="POST" style="display: inline;">
                                                             <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
                                                             <button type="submit" class="action-btn publish-btn"
                                                                 title="Отправить на проверку">
@@ -336,13 +353,14 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                                                     <?php endif; ?>
 
                                                     <?php if ($is_author): ?>
-                                                        <a href="edit_news.php?id=<?= $post['id'] ?>" class="action-btn edit-btn"
-                                                            title="Редактировать">
+                                                        <!-- ИСПРАВЛЕНО: добавлен абсолютный путь -->
+                                                        <a href="/assets/app/edit_news.php?id=<?= $post['id'] ?>"
+                                                            class="action-btn edit-btn" title="Редактировать">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                     <?php endif; ?>
 
-                                                    <form action="assets/app/delete_news.php" method="POST" style="display: inline;"
+                                                    <form action="/assets/app/delete_news.php" method="POST" style="display: inline;"
                                                         onsubmit="return confirm('Удалить эту новость? Это действие нельзя отменить!');">
                                                         <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
                                                         <button type="submit" class="action-btn delete-btn" title="Удалить">
@@ -363,10 +381,17 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                     <div class="profile-card">
                         <div class="profile-header">
                             <div class="avatar">
-                                <?php if ($user['avatar'] === 'assets/Media/Photo/man.png' || empty($user['avatar'])): ?>
+                                <?php
+                                $avatar_path = $user['avatar'] ?? '';
+                                if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
+                                    $avatar_path = '/' . $avatar_path;
+                                }
+                                ?>
+                                <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png' || $avatar_path === 'assets/Media/Photo/man.png'): ?>
                                     <i class="fas fa-user"></i>
                                 <?php else: ?>
-                                    <img src="<?= htmlspecialchars($user['avatar']) ?>" alt="Аватар">
+                                    <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
+                                        onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
                                 <?php endif; ?>
                             </div>
                             <div class="profile-info">
@@ -422,8 +447,8 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                             </form>
                         <?php elseif (!$is_logged_in): ?>
                             <div class="auth-prompt">
-                                <p>Хотите оставить отзыв? <a href="/login">Войдите</a> или <a
-                                        href="/reg">зарегистрируйтесь</a>!</p>
+                                <p>Хотите оставить отзыв? <a href="/login">Войдите</a> или <a href="/reg">зарегистрируйтесь</a>!
+                                </p>
                             </div>
                         <?php elseif ($is_own_profile): ?>
                             <p class="self-note">Вы не можете оставлять отзывы самому себе.</p>
@@ -436,8 +461,14 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                                 <?php foreach ($reviews as $review): ?>
                                     <div class="review-card">
                                         <div class="review-header">
-                                            <img src="<?= htmlspecialchars($review['author_avatar']) ?>" alt="Аватар"
-                                                class="review-avatar">
+                                            <?php
+                                            $review_avatar = $review['author_avatar'] ?? '/assets/Media/Photo/man.png';
+                                            if (strpos($review_avatar, 'http') !== 0 && strpos($review_avatar, '/') !== 0) {
+                                                $review_avatar = '/' . $review_avatar;
+                                            }
+                                            ?>
+                                            <img src="<?= htmlspecialchars($review_avatar) ?>" alt="Аватар" class="review-avatar"
+                                                onerror="this.src='/assets/Media/Photo/man.png'">
                                             <div class="review-author">
                                                 <a href="/profile/<?= $review['author_id'] ?>" class="review-author-name">
                                                     <?= htmlspecialchars($review['author_login']) ?>

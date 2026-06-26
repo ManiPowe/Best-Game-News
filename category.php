@@ -147,7 +147,7 @@ $result = mysqli_stmt_get_result($stmt);
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="../search.php" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -217,7 +217,7 @@ $result = mysqli_stmt_get_result($stmt);
                         mysqli_data_seek($games_list_result, 0);
                         while ($game = mysqli_fetch_assoc($games_list_result)):
                             ?>
-                            <a href="/category/games/<?= $game['id'] ?>?sort=<?= $sort ?>"
+                            <a href="/category/games?game_id=<?= $game['id'] ?>?sort=<?= $sort ?>"
                                 class="filter-btn <?= $game_id == $game['id'] ? 'active' : '' ?>">
                                 <?php if ($game['icon']): ?>
                                     <img src="<?= htmlspecialchars($game['icon']) ?>" alt="<?= htmlspecialchars($game['name']) ?>">

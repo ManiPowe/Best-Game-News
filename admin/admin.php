@@ -1,10 +1,8 @@
 <?php
 require_once 'check_admin.php';
 
-// Определяем активную вкладку
 $active_tab = $_GET['tab'] ?? 'moderation';
 
-// Получаем роль пользователя из БД (надёжнее, чем из сессии)
 $user_role = null;
 if (isset($_SESSION['user_id'])) {
     $role_sql = "SELECT role FROM users WHERE id = ?";
@@ -15,7 +13,6 @@ if (isset($_SESSION['user_id'])) {
     $user_role = mysqli_fetch_assoc($role_res)['role'] ?? null;
 }
 
-// Получаем статистику для дашборда
 $stats = [
     'pending_news' => mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM news WHERE status = 'pending'"))['c'],
     'total_news' => mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM news"))['c'],
@@ -78,7 +75,7 @@ $stats = [
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                    <a href="../create_news.php" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
@@ -94,7 +91,6 @@ $stats = [
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php
-                        // Достаём аватарку из БД, если её нет в сессии
                         if (empty($_SESSION['avatar'])) {
                             $avatar_sql = "SELECT avatar FROM users WHERE id = ?";
                             $avatar_stmt = mysqli_prepare($conn, $avatar_sql);
@@ -106,12 +102,11 @@ $stats = [
                             }
                         }
                         $avatar_path = $_SESSION['avatar'] ?? 'assets/Media/Photo/man.png';
-                        // Добавляем ../ если путь относительный (мы в папке /admin/)
                         if (strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
                             $avatar_path = '../' . $avatar_path;
                         }
                         ?>
-                        <a href="..//profile/<?= $_SESSION['user_id'] ?>" class="user-avatar-link">
+                        <a href="/profile/<?= htmlspecialchars($_SESSION['user_id']) ?>" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Профиль" class="header-avatar"
                                 onerror="this.src='../assets/Media/Photo/man.png'">
                         </a>
@@ -156,7 +151,7 @@ $stats = [
 
                     <a href="?tab=support" class="menu-item <?= $active_tab === 'support' ? 'active' : '' ?>">
                         <i class="fas fa-life-ring"></i> Поддержка
-                        
+
                     </a>
 
                     <?php if (in_array($user_role, ['admin', 'moderator'])): ?>
@@ -181,7 +176,7 @@ $stats = [
                         echo '<h2>Вкладка не найдена</h2>';
                     }
                     ?>
-                    
+
                 </div>
             </div>
         </div>

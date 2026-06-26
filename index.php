@@ -333,14 +333,13 @@ require_once 'assets/app/db.php';
                         <div class="marquee-viewport">
                             <div class="marquee-content">
                                 <?php
-                                // Получаем популярные игры из БД
                                 $popular_games_sql = "SELECT id, name, icon FROM games ORDER BY id ASC LIMIT 15";
                                 $popular_games_result = mysqli_query($conn, $popular_games_sql);
 
                                 if ($popular_games_result && mysqli_num_rows($popular_games_result) > 0):
                                     while ($game = mysqli_fetch_assoc($popular_games_result)):
                                         ?>
-                                        <a href="/category/games&game_id=<?= $game['id'] ?>" class="marquee-item">
+                                        <a href="/category/games?game_id=<?= $game['id'] ?>" class="marquee-item">
                                             <span class="game-name"><?= htmlspecialchars($game['name']) ?></span>
                                             <?php if ($game['icon']): ?>
                                                 <img class="game-icon" src="<?= htmlspecialchars($game['icon']) ?>"
