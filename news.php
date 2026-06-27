@@ -3,7 +3,7 @@ session_start();
 require_once 'assets/app/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php");
+    header("Location: /home");
     exit;
 }
 
@@ -103,11 +103,6 @@ $is_logged_in = isset($_SESSION['user_id']);
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
     <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    
-    // Получаем роль пользователя ОДИН раз
     $user_role = null;
     if (isset($_SESSION['user_id'])) {
         $check_role_sql = "SELECT role FROM users WHERE id = ?";
@@ -119,16 +114,17 @@ $is_logged_in = isset($_SESSION['user_id']);
     }
     ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="/index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="/index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -137,19 +133,19 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="/create_news.php" class="create-news-btn">
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -179,9 +175,12 @@ $is_logged_in = isset($_SESSION['user_id']);
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
         <div class="news-container">
+            <!-- статья новости -->
             <article class="news-article">
                 <h1><?= htmlspecialchars($news['title']) ?></h1>
 
@@ -213,20 +212,49 @@ $is_logged_in = isset($_SESSION['user_id']);
                     <span class="news-views"><i class="fas fa-eye"></i> <?= $news['views'] ?></span>
                 </div>
 
-                <?php
-                $news_image = $news['image'] ?? '';
-                if ($news_image && strpos($news_image, 'http') !== 0 && strpos($news_image, '/') !== 0) {
-                    $news_image = '/' . $news_image;
-                }
-                $image_file = $_SERVER['DOCUMENT_ROOT'] . $news_image;
-                $image_exists = $news_image && file_exists($image_file);
-                $display_image = $image_exists ? $news_image : '/assets/Media/Photo/Заглушка.jpg';
-                ?>
-                <img src="<?= htmlspecialchars($display_image) ?>" alt="<?= htmlspecialchars($news['title']) ?>"
-                    class="news-image" onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
+                <?php if ($news['category'] === 'videos'): ?>
+                    <!-- видео-плеер -->
+                    <div class="video-player-wrap">
+                        <?php
+                        $video_path = $news['video_path'] ?? $news['image'];
+                        if ($video_path && strpos($video_path, 'http') !== 0 && strpos($video_path, '/') !== 0) {
+                            $video_path = '/' . $video_path;
+                        }
 
+                        $video_file = $_SERVER['DOCUMENT_ROOT'] . $video_path;
+                        $video_exists = $video_path && file_exists($video_file);
+                        ?>
+
+                        <?php if ($video_exists): ?>
+                            <video controls class="news-video" preload="metadata"
+                                poster="<?= htmlspecialchars($news['image'] ? (strpos($news['image'], '/') === 0 ? $news['image'] : '/' . $news['image']) : '/assets/Media/Photo/Заглушка.jpg') ?>">
+                                <source src="<?= htmlspecialchars($video_path) ?>" type="video/mp4">
+                                Ваш браузер не поддерживает воспроизведение видео.
+                            </video>
+                        <?php else: ?>
+                            <div class="video-error">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Видео не найдено или не загружено</p>
+                                <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'moderator'): ?>
+                                    <small style="color: #777;">Путь: <?= htmlspecialchars($video_path) ?></small>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <!-- /видео-плеер -->
+                <?php elseif ($news['image']): ?>
+                    <!-- картинка -->
+                    <?php
+                    $news_image = $news['image'];
+                    if ($news_image && strpos($news_image, 'http') !== 0 && strpos($news_image, '/') !== 0) {
+                        $news_image = '/' . $news_image;
+                    }
+                    ?>
+                    <img src="<?= htmlspecialchars($news_image) ?>" alt="<?= htmlspecialchars($news['title']) ?>"
+                        class="news-image">
+                <?php endif; ?>
                 <div class="news-content">
-                    <?= nl2br(htmlspecialchars($news['content'])) ?>
+                    <?= $news['content'] ?>
                 </div>
 
                 <?php
@@ -273,12 +301,14 @@ $is_logged_in = isset($_SESSION['user_id']);
                     </button>
                 </div>
             </article>
+            <!-- /статья новости -->
 
+            <!-- комментарии -->
             <div class="comments-section">
                 <h3>Комментарии (<?= count($comments) ?>)</h3>
 
                 <?php if ($is_logged_in): ?>
-                    <form action="assets/app/add_comment.php" method="POST" class="comment-form">
+                    <form action="/assets/app/add_comment.php" method="POST" class="comment-form">
                         <input type="hidden" name="news_id" value="<?= $news['id'] ?>">
                         <textarea name="comment_text" placeholder="Напишите комментарий..." required></textarea>
                         <button type="submit">Отправить</button>
@@ -293,7 +323,6 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <?php if (!empty($comments)): ?>
                     <div class="comments-list">
                         <?php foreach ($comments as $comment):
-                            // Проверяем, лайкал ли текущий пользователь
                             $is_comment_liked = false;
                             if ($is_logged_in) {
                                 $comment_like_check = mysqli_prepare($conn, "SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?");
@@ -339,9 +368,12 @@ $is_logged_in = isset($_SESSION['user_id']);
                     <p class="no-comments">Пока нет комментариев. Будьте первым!</p>
                 <?php endif; ?>
             </div>
+            <!-- /комментарии -->
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -373,6 +405,7 @@ $is_logged_in = isset($_SESSION['user_id']);
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/like_favorite.js"></script>
     <script src="/assets/js/theme.js"></script>
 </body>

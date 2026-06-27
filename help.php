@@ -80,16 +80,17 @@ if ($is_logged_in) {
 <body>
     <script src="/assets/js/theme-init.js"></script>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -98,19 +99,19 @@ if ($is_logged_in) {
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -133,9 +134,16 @@ if ($is_logged_in) {
                             </a>
                         </div>
 
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
                         <a href="/cab" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>"
+                                alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
                         <a href="/login">
@@ -148,11 +156,13 @@ if ($is_logged_in) {
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main class="help-main">
         <div class="help-container">
             <div class="help-header">
-                <h1></i> Помощь и поддержка</h1>
+                <h1>Помощь и поддержка</h1>
                 <p>Мы всегда готовы помочь! Создайте обращение, и наша команда ответит вам в ближайшее время.</p>
             </div>
 
@@ -171,7 +181,7 @@ if ($is_logged_in) {
             <?php endif; ?>
 
             <div class="help-grid">
-                <!-- Форма создания тикета -->
+                <!-- форма создания тикета -->
                 <div class="help-section">
                     <h2><i class="fas fa-plus-circle"></i> Создать обращение</h2>
 
@@ -202,8 +212,9 @@ if ($is_logged_in) {
                         </div>
                     <?php endif; ?>
                 </div>
+                <!-- /форма создания тикета -->
 
-                <!-- Контакты -->
+                <!-- контакты -->
                 <div class="help-section contacts-section">
                     <h2><i class="fas fa-phone-alt"></i> Свяжитесь с нами</h2>
 
@@ -241,8 +252,10 @@ if ($is_logged_in) {
                         </div>
                     </div>
                 </div>
+                <!-- /контакты -->
             </div>
 
+            <!-- FAQ -->
             <div class="faq-section-full">
                 <h2><i class="fas fa-question-circle"></i> Частые вопросы</h2>
 
@@ -300,8 +313,9 @@ if ($is_logged_in) {
                     </div>
                 </div>
             </div>
+            <!-- /FAQ -->
 
-            <!-- Список тикетов -->
+            <!-- список тикетов -->
             <?php if ($is_logged_in && !empty($tickets)): ?>
                 <div class="tickets-section">
                     <h2><i class="fas fa-list"></i> Мои обращения (<?= count($tickets) ?>)</h2>
@@ -346,9 +360,12 @@ if ($is_logged_in) {
                     </div>
                 </div>
             <?php endif; ?>
+            <!-- /список тикетов -->
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -381,6 +398,7 @@ if ($is_logged_in) {
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/no-cache.js"></script>                                   
     <script src="/assets/js/theme.js"></script>
     <script src="/assets/js/help.js"></script>

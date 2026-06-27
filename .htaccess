@@ -1,6 +1,10 @@
 RewriteEngine On
 RewriteBase /
 
+# Редирект со старого index.php на /home
+RewriteCond %{THE_REQUEST} /index\.php [NC]
+RewriteRule ^(.*)index\.php$ /home [R=301,L]
+
 # Разрешаем статику
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

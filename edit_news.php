@@ -15,12 +15,12 @@ $result_role = mysqli_stmt_get_result($stmt_role);
 $user_role = mysqli_fetch_assoc($result_role)['role'];
 
 if ($user_role !== 'creator' && $user_role !== 'admin') {
-    header("Location: index.php");
+    header("Location: /home");
     exit;
 }
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php");
+    header("Location: /home");
     exit;
 }
 
@@ -113,9 +113,9 @@ while ($game = mysqli_fetch_assoc($games_result)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редактировать новость - Best Game News</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/create_news.css">
-    <link rel="stylesheet" href="css/light-theme.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/create_news.css">
+    <link rel="stylesheet" href="/css/light-theme.css">
     <link rel="shortcut icon" href="/assets/Media/Photo/asd.png" type="image/x-icon">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
 </head>
@@ -123,54 +123,39 @@ while ($game = mysqli_fetch_assoc($games_result)) {
 <body>
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
-    <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    
-    // Получаем роль пользователя ОДИН раз
-    $user_role = null;
-    if (isset($_SESSION['user_id'])) {
-        $check_role_sql = "SELECT role FROM users WHERE id = ?";
-        $stmt_role = mysqli_prepare($conn, $check_role_sql);
-        mysqli_stmt_bind_param($stmt_role, "i", $_SESSION['user_id']);
-        mysqli_stmt_execute($stmt_role);
-        $result_role = mysqli_stmt_get_result($stmt_role);
-        $user_role = mysqli_fetch_assoc($result_role)['role'] ?? null;
-    }
-    ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
                 <a href="/category/videos">Видео</a>
-                <a href="/category/walkthroughsдения</a>
+                <a href="/category/walkthroughs">Прохождения</a>
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
-                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -179,9 +164,15 @@ while ($game = mysqli_fetch_assoc($games_result)) {
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
                         <a href="/cab" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>" alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
                         <a href="/login">
@@ -194,7 +185,9 @@ while ($game = mysqli_fetch_assoc($games_result)) {
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
         <div class="create-news-container">
             <h1><i class="fas fa-edit"></i> Редактирование новости</h1>
@@ -207,8 +200,8 @@ while ($game = mysqli_fetch_assoc($games_result)) {
                 <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
             <?php endif; ?>
 
-            <form action="edit_news.php?id=<?= $news_id ?>" method="POST" enctype="multipart/form-data"
-                class="create-news-form">
+            <!-- форма редактирования -->
+            <form action="/edit/<?= $news_id ?>" method="POST" enctype="multipart/form-data" class="create-news-form">
                 <div class="form-group">
                     <label for="title">Заголовок *</label>
                     <input type="text" id="title" name="title" required maxlength="255"
@@ -293,9 +286,12 @@ while ($game = mysqli_fetch_assoc($games_result)) {
                     <a href="/profile/<?= $_SESSION['user_id'] ?>" class="cancel-btn">Отмена</a>
                 </div>
             </form>
+            <!-- /форма редактирования -->
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -327,6 +323,7 @@ while ($game = mysqli_fetch_assoc($games_result)) {
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/game-edit-news"></script>
     <script src="/assets/js/theme.js"></script>
 </body>

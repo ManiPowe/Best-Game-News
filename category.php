@@ -51,9 +51,10 @@ $game_id = isset($_GET['game_id']) ? (int) $_GET['game_id'] : 0;
 $games_list_sql = "SELECT id, name, icon FROM games ORDER BY name ASC";
 $games_list_result = mysqli_query($conn, $games_list_sql);
 
-// 4. Формируем SQL запрос (без подзапроса favorites)
+// 4. Формируем SQL запрос
 $sql = "SELECT n.*, u.login as author_login, u.avatar as author_avatar, 
-               g.name as game_name, g.icon as game_icon
+               g.name as game_name, g.icon as game_icon,
+               (SELECT COUNT(*) FROM favorites WHERE news_id = n.id) as favorites_count
         FROM news n 
         JOIN users u ON n.author_id = u.id 
         LEFT JOIN games g ON n.game_id = g.id 
@@ -81,7 +82,6 @@ $sql .= " LIMIT 50";
 // Подготавливаем запрос
 $stmt = mysqli_prepare($conn, $sql);
 
-// Если prepare не удался — выводим ошибку для отладки
 if (!$stmt) {
     die("SQL Error: " . mysqli_error($conn) . "<br>Query: " . $sql);
 }
@@ -117,16 +117,18 @@ $result = mysqli_stmt_get_result($stmt);
     <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/js/theme.js" defer></script>
     <script src="/assets/js/news_actions.js"></script>
+    
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="/index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -135,19 +137,19 @@ $result = mysqli_stmt_get_result($stmt);
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
-                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="../search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -186,7 +188,9 @@ $result = mysqli_stmt_get_result($stmt);
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main class="main-container">
         <div class="content-wrapper">
             <div class="content-area" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px;">
@@ -208,6 +212,7 @@ $result = mysqli_stmt_get_result($stmt);
                     </div>
                 </div>
 
+                <!-- фильтр игр -->
                 <?php if ($type == 'games' && mysqli_num_rows($games_list_result) > 0): ?>
                     <div class="games-filter">
                         <a href="/category/games?sort=<?= $sort ?>" class="filter-btn <?= $game_id == 0 ? 'active' : '' ?>">
@@ -217,7 +222,7 @@ $result = mysqli_stmt_get_result($stmt);
                         mysqli_data_seek($games_list_result, 0);
                         while ($game = mysqli_fetch_assoc($games_list_result)):
                             ?>
-                            <a href="/category/games?game_id=<?= $game['id'] ?>?sort=<?= $sort ?>"
+                            <a href="/category/games?game_id=<?= $game['id'] ?>&sort=<?= $sort ?>"
                                 class="filter-btn <?= $game_id == $game['id'] ? 'active' : '' ?>">
                                 <?php if ($game['icon']): ?>
                                     <img src="<?= htmlspecialchars($game['icon']) ?>" alt="<?= htmlspecialchars($game['name']) ?>">
@@ -227,27 +232,53 @@ $result = mysqli_stmt_get_result($stmt);
                         <?php endwhile; ?>
                     </div>
                 <?php endif; ?>
+                <!-- /фильтр игр -->
 
+                <!-- сетка новостей -->
                 <?php if (mysqli_num_rows($result) > 0): ?>
                     <div class="news-grid">
                         <?php while ($news = mysqli_fetch_assoc($result)): ?>
                             <div class="news-card">
                                 <a href="/news/<?= $news['id'] ?>" class="news-image-wrap">
-                                    <?php
-                                    $image_path = $news['image'] ?? '';
-
-                                    // Делаем путь абсолютным (начинается с /)
-                                    if ($image_path && strpos($image_path, 'http') !== 0 && strpos($image_path, '/') !== 0) {
-                                        $image_path = '/' . $image_path;
-                                    }
-
-                                    // Проверяем существование файла
-                                    $file_path = $_SERVER['DOCUMENT_ROOT'] . $image_path;
-                                    $image_exists = $image_path && file_exists($file_path);
-                                    $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
-                                    ?>
-                                    <img src="<?= htmlspecialchars($display_image) ?>"
-                                        alt="<?= htmlspecialchars($news['title']) ?>">
+                                    <?php if ($news['category'] === 'videos'): ?>
+                                        <!-- Превью видео — показываем обложку + иконку play -->
+                                        <?php
+                                        $cover_path = $news['image'] ?? '';
+                                        if ($cover_path && strpos($cover_path, 'http') !== 0 && strpos($cover_path, '/') !== 0) {
+                                            $cover_path = '/' . $cover_path;
+                                        }
+                                        $cover_file = $_SERVER['DOCUMENT_ROOT'] . $cover_path;
+                                        $cover_exists = $cover_path && file_exists($cover_file);
+                                        ?>
+                                        <div class="video-preview-wrap">
+                                            <?php if ($cover_exists): ?>
+                                                <img src="<?= htmlspecialchars($cover_path) ?>"
+                                                    alt="<?= htmlspecialchars($news['title']) ?>">
+                                            <?php else: ?>
+                                                <div class="video-placeholder">
+                                                    <i class="fas fa-video"></i>
+                                                    <span>Видео</span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div class="video-play-icon">
+                                                <i class="fas fa-play-circle"></i>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- Обычная картинка -->
+                                        <?php
+                                        $image_path = $news['image'] ?? '';
+                                        if ($image_path && strpos($image_path, 'http') !== 0 && strpos($image_path, '/') !== 0) {
+                                            $image_path = '/' . $image_path;
+                                        }
+                                        $file_path = $_SERVER['DOCUMENT_ROOT'] . $image_path;
+                                        $image_exists = $image_path && file_exists($file_path);
+                                        $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
+                                        ?>
+                                        <img src="<?= htmlspecialchars($display_image) ?>"
+                                            alt="<?= htmlspecialchars($news['title']) ?>"
+                                            onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
+                                    <?php endif; ?>
 
                                     <?php if ($news['game_name']): ?>
                                         <div class="game-badge-overlay">
@@ -282,7 +313,8 @@ $result = mysqli_stmt_get_result($stmt);
                                             }
                                             ?>
                                             <img src="<?= htmlspecialchars($author_avatar ?: '/assets/Media/Photo/man.png') ?>"
-                                                alt="<?= htmlspecialchars($news['author_login']) ?>" class="author-avatar">
+                                                alt="<?= htmlspecialchars($news['author_login']) ?>" class="author-avatar"
+                                                onerror="this.src='/assets/Media/Photo/man.png'">
                                             <span><?= htmlspecialchars($news['author_login']) ?></span>
                                         </div>
 
@@ -309,11 +341,14 @@ $result = mysqli_stmt_get_result($stmt);
                         <p>Загляните позже, мы скоро добавим материалы!</p>
                     </div>
                 <?php endif; ?>
+                <!-- /сетка новостей -->
 
             </div>
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -321,7 +356,7 @@ $result = mysqli_stmt_get_result($stmt);
                 <p>Best Game News</p>
             </div>
             <div class="prav">
-                <p>2026 © Все права защищенны Best Game News</p>
+                <p>2026 © Все права защищены Best Game News</p>
             </div>
             <div class="social-links">
                 <a href="#" aria-label="ВКонтакте">
@@ -345,6 +380,7 @@ $result = mysqli_stmt_get_result($stmt);
             </div>
         </div>
     </footer>
+    <!-- /футер -->
 
     <script src="/assets/js/theme.js" defer></script>
 </body>

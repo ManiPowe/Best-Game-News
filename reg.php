@@ -9,9 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
+    $phone_raw = $_POST['phone'] ?? '';
+    $phone = preg_replace('/[^0-9+]/', '', $phone_raw);
 
-    if (strlen($password) < 8) {
+    if (strlen($phone) !== 12) {
+        $error = "Введите корректный номер телефона";
+    } elseif (strlen($password) < 8) {
         $error = "Пароль должен быть не менее 8 символов!";
     } else {
         $check_sql = "SELECT id FROM users WHERE login = ? OR email = ?";
@@ -35,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['login'] = $login;
                 $_SESSION['avatar'] = 'assets/Media/Photo/man.png';
 
-                header("Location: ../../index.php");
+                header("Location: /home");
                 exit;
             } else {
                 $error = "Ошибка при регистрации: " . mysqli_error($conn);
@@ -57,23 +60,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/jquery.inputmask.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#phone').inputmask('+7 (999) 999-99-99', {
+                clearIncomplete: true,
+                showMaskOnHover: false,
+                showMaskOnFocus: true
+            });
+
+            $('input[name="phone"]').inputmask('+7 (999) 999-99-99');
+        });
+    </script>
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
+    
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/login">Вход</a>
             </nav>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
         <div class="main-container">
             <div class="auth-container">
@@ -81,7 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if ($error): ?>
                     <p
                         style="color: #ff4444; text-align: center; margin-bottom: 15px; background: rgba(255,68,68,0.1); padding: 8px; border-radius: 5px;">
-                        <?= htmlspecialchars($error) ?></p>
+                        <?= htmlspecialchars($error) ?>
+                    </p>
                 <?php endif; ?>
                 <form class="auth-form" method="POST">
                     <div class="form-group">
@@ -102,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="form-group">
                         <label>Телефон</label>
-                        <input type="tel" name="phone" required>
+                        <input type="tel" id="phone" name="phone" placeholder="+7 (___) ___-__-__" required>
                     </div>
                     <button type="submit" class="submit-btn">Зарегистрироваться</button>
                 </form>
@@ -110,7 +131,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -142,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+    <!-- /футер -->
 </body>
 
 </html>

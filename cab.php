@@ -3,7 +3,6 @@ session_start();
 require_once 'assets/app/db.php';
 // Подключаем функции уведомлений
 require_once 'assets/app/notifications.php';
-$unread_count = getUnreadCount($conn, $user_id);
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /login");
@@ -11,6 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$unread_count = getUnreadCount($conn, $user_id);
 
 $sql = "SELECT * FROM users WHERE id = ?";
 $stmt = mysqli_prepare($conn, $sql);
@@ -64,15 +64,20 @@ $current_tab = $_GET['tab'] ?? 'settings';
 </head>
 
 <body>
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/jquery.inputmask.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('input[name="phone"], input[type="tel"]').inputmask('+7 (999) 999-99-99', {
+                clearIncomplete: true,
+                showMaskOnHover: false
+            });
+        });
+    </script>
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/js/file_input.js"></script>
     <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    
-    // Получаем роль пользователя ОДИН раз
     $user_role = null;
     if (isset($_SESSION['user_id'])) {
         $check_role_sql = "SELECT role FROM users WHERE id = ?";
@@ -84,16 +89,17 @@ $current_tab = $_GET['tab'] ?? 'settings';
     }
     ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -102,19 +108,19 @@ $current_tab = $_GET['tab'] ?? 'settings';
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
-                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -138,9 +144,12 @@ $current_tab = $_GET['tab'] ?? 'settings';
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
         <div class="dashboard">
+            <!-- сайдбар -->
             <aside class="sidebar">
                 <h3>Мой аккаунт</h3>
                 <a href="/profile/<?= $user_id ?>" class="menu-item">
@@ -171,12 +180,11 @@ $current_tab = $_GET['tab'] ?? 'settings';
                     <span>Выход</span>
                 </a>
             </aside>
+            <!-- /сайдбар -->
 
             <div class="content-area">
                 <?php if ($current_tab === 'settings'): ?>
-                    <!-- ========================================== -->
-                    <!-- ВКЛАДКА НАСТРОЕК (ПРОФИЛЬ) -->
-                    <!-- ========================================== -->
+                    <!-- вкладка настроек -->
                     <div class="content-header">
                         <h2>Профиль пользователя</h2>
                     </div>
@@ -291,9 +299,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                     </form>
 
                 <?php elseif ($current_tab === 'favorites'): ?>
-                    <!-- ========================================== -->
-                    <!-- ВКЛАДКА ИЗБРАННОГО -->
-                    <!-- ========================================== -->
+                    <!-- вкладка избранного -->
                     <div class="content-header">
                         <h2><i class="fas fa-bookmark"></i> Избранные новости</h2>
                     </div>
@@ -332,7 +338,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                     $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
                                     $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
                                     ?>
-                                    <a href="news.php?id=<?= $fav['id'] ?>" class="favorite-card">
+                                    <a href="/news/<?= $fav['id'] ?>" class="favorite-card">
                                         <div class="favorite-cover">
                                             <img src="<?= htmlspecialchars($display_image) ?>"
                                                 alt="<?= htmlspecialchars($fav['title']) ?>">
@@ -389,15 +395,13 @@ $current_tab = $_GET['tab'] ?? 'settings';
                             <div class="empty-favorites">
                                 <i class="fas fa-bookmark"></i>
                                 <p>У вас пока нет избранных новостей</p>
-                                <a href="index.php" class="browse-btn">Перейти к новостям</a>
+                                <a href="/home" class="browse-btn">Перейти к новостям</a>
                             </div>
                         <?php endif; ?>
                     </div>
 
                 <?php elseif ($current_tab === 'comments'): ?>
-                    <!-- ========================================== -->
-                    <!-- ВКЛАДКА КОММЕНТАРИЕВ -->
-                    <!-- ========================================== -->
+                    <!-- вкладка комментариев -->
                     <div class="content-header">
                         <h2><i class="fas fa-comments"></i> Комментарии</h2>
                     </div>
@@ -454,7 +458,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                 <?php foreach ($my_comments as $comment): ?>
                                     <div class="comment-card">
                                         <div class="comment-header">
-                                            <a href="news.php?id=<?= $comment['news_id'] ?>" class="comment-news-link">
+                                            <a href="/news/<?= $comment['news_id'] ?>" class="comment-news-link">
                                                 <i class="fas fa-newspaper"></i>
                                                 <?= htmlspecialchars($comment['news_title']) ?>
                                             </a>
@@ -470,7 +474,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                                 <i class="fas fa-heart"></i>
                                                 <span><?= $comment['likes_count'] ?? 0 ?></span>
                                             </span>
-                                            <a href="news.php?id=<?= $comment['news_id'] ?>#comment-<?= $comment['id'] ?>"
+                                            <a href="/news/<?= $comment['news_id'] ?>#comment-<?= $comment['id'] ?>"
                                                 class="view-btn">
                                                 <i class="fas fa-external-link-alt"></i> Перейти к новости
                                             </a>
@@ -498,7 +502,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                                     class="reply-avatar">
                                                 <span class="reply-name"><?= htmlspecialchars($reply['author_login']) ?></span>
                                             </div>
-                                            <a href="news.php?id=<?= $reply['news_id'] ?>" class="comment-news-link">
+                                            <a href="/news/<?= $reply['news_id'] ?>" class="comment-news-link">
                                                 <i class="fas fa-newspaper"></i>
                                                 <?= htmlspecialchars($reply['news_title']) ?>
                                             </a>
@@ -510,7 +514,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                                             <span class="comment-date">
                                                 <?= date('d.m.Y H:i', strtotime($reply['created_at'])) ?>
                                             </span>
-                                            <a href="news.php?id=<?= $reply['news_id'] ?>#comment-<?= $reply['id'] ?>"
+                                            <a href="/news/<?= $reply['news_id'] ?>#comment-<?= $reply['id'] ?>"
                                                 class="view-btn">
                                                 <i class="fas fa-external-link-alt"></i> Перейти к новости
                                             </a>
@@ -545,9 +549,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
                     </script>
 
                 <?php elseif ($current_tab === 'notifications'): ?>
-                    <!-- ========================================== -->
-                    <!-- ВКЛАДКА УВЕДОМЛЕНИЙ -->
-                    <!-- ========================================== -->
+                    <!-- вкладка уведомлений -->
                     <div class="content-header">
                         <h2><i class="fas fa-bell"></i> Уведомления</h2>
                     </div>
@@ -622,7 +624,9 @@ $current_tab = $_GET['tab'] ?? 'settings';
             </div>
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -654,6 +658,7 @@ $current_tab = $_GET['tab'] ?? 'settings';
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/theme.js"></script>
 </body>
 

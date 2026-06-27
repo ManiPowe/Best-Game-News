@@ -79,44 +79,124 @@ $top_authors_result = mysqli_query($conn, $top_authors_sql);
         </div>
 
         <!-- Активность и показатели в 2 колонки -->
+        <!-- Графики вместо текстовых блоков -->
         <div class="stats-detail-grid">
             <div class="stat-detail-card">
                 <h3><i class="fas fa-chart-line"></i> Активность постов</h3>
-                <div class="detail-stats">
-                    <div class="detail-item">
-                        <span class="detail-label">За неделю</span>
-                        <span class="detail-value"><?= $stats['news_week'] ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">За месяц</span>
-                        <span class="detail-value"><?= $stats['news_month'] ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Сегодня</span>
-                        <span class="detail-value highlight"><?= $stats['news_today'] ?></span>
-                    </div>
-                </div>
+                <canvas id="activityChart" style="max-height: 250px;"></canvas>
             </div>
 
             <div class="stat-detail-card">
-                <h3><i class="fas fa-percentage"></i> Показатели</h3>
-                <div class="detail-stats">
-                    <div class="detail-item">
-                        <span class="detail-label">Постов в день</span>
-                        <span class="detail-value"><?= $stats['news_today'] ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Комментов на пост</span>
-                        <span
-                            class="detail-value"><?= $stats['news_total'] > 0 ? round($stats['comments_total'] / $stats['news_total'], 1) : 0 ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Пользователей онлайн</span>
-                        <span class="detail-value highlight"><?= $users_online ?></span>
-                    </div>
-                </div>
+                <h3><i class="fas fa-chart-pie"></i> Распределение контента</h3>
+                <canvas id="categoryChart" style="max-height: 250px;"></canvas>
             </div>
         </div>
+
+        <!-- Подключаем Chart.js -->
+        <script src="/assets/js/chart.min.js"></script>
+        <script>
+            // Настройка для тёмной темы
+            Chart.defaults.color = '#ffffff';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+            // График активности (последние 7 дней)
+            fetch('/admin/ajax/stats.php?action=activity')
+                .then(res => res.json())
+                .then(data => {
+                    new Chart(document.getElementById('activityChart'), {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Постов',
+                                data: data.data,
+                                borderColor: '#df1b1b',
+                                backgroundColor: 'rgba(223, 27, 27, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointBackgroundColor: '#df1b1b',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#df1b1b',
+                                    borderWidth: 1
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        color: '#b0b0b0'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#b0b0b0'
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+
+            // График категорий
+            fetch('/admin/ajax/stats.php?action=categories')
+                .then(res => res.json())
+                .then(data => {
+                    new Chart(document.getElementById('categoryChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: data.colors,
+                                borderWidth: 0,
+                                hoverOffset: 15
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 15,
+                                        color: '#fff',
+                                        font: { size: 12 }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#df1b1b',
+                                    borderWidth: 1
+                                }
+                            }
+                        }
+                    });
+                });
+        </script>
     </div>
 
     <!-- ПРАВАЯ УЗКАЯ ЧАСТЬ: ТОП АВТОРОВ -->

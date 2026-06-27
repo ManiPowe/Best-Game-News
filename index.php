@@ -23,11 +23,6 @@ require_once 'assets/app/db.php';
     <script src="/assets/JS/main_slider.js"></script>
 
     <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    
-    // Получаем роль пользователя ОДИН раз
     $user_role = null;
     if (isset($_SESSION['user_id'])) {
         $check_role_sql = "SELECT role FROM users WHERE id = ?";
@@ -39,16 +34,17 @@ require_once 'assets/app/db.php';
     }
     ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -63,13 +59,13 @@ require_once 'assets/app/db.php';
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -107,10 +103,12 @@ require_once 'assets/app/db.php';
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
     <main>
         <div class="main-container">
             <div class="content-wrapper">
+                <!-- левый слайдер -->
                 <div class="left-sidebar">
                     <div class="popular-authors">
                         <h3>Популярные авторы</h3>
@@ -149,13 +147,15 @@ require_once 'assets/app/db.php';
                         <?php endif; ?>
                     </div>
                 </div>
+                <!-- /левый слайдер -->
 
+                <!-- центральный контент -->
                 <div class="main-content">
+                    <!-- главный слайдер -->
                     <div class="hero-section">
                         <div class="hero-slider">
                             <div class="slider-container">
                                 <?php
-                                // Получаем избранные новости для слайдера
                                 $slider_sql = "SELECT n.*, u.login as author_login 
                            FROM news n 
                            JOIN users u ON n.author_id = u.id 
@@ -184,14 +184,13 @@ require_once 'assets/app/db.php';
                                                 <p>
                                                     <?= htmlspecialchars(mb_substr($slide['short_description'] ?? $slide['content'], 0, 150)) ?>...
                                                 </p>
-                                                <a href="news.php?id=<?= $slide['id'] ?>">Подробнее...</a>
+                                                <a href="/news/<?= $slide['id'] ?>">Подробнее...</a>
                                             </div>
                                         </div>
                                         <?php
                                         $slide_index++;
                                     endwhile;
                                 else:
-                                    // Если избранных нет — показываем дефолтные слайды
                                     ?>
                                     <div class="hero-card slide active">
                                         <img src="/assets/Media/Photo/Заглушка.jpg" loading="lazy" alt="DOTA 2">
@@ -212,7 +211,9 @@ require_once 'assets/app/db.php';
                             <div class="slider-indicators"></div>
                         </div>
                     </div>
+                    <!-- /главный слайдер -->
 
+                    <!-- новости дня -->
                     <div class="news-container">
                         <div class="section-header">
                             <div class="todays-news">
@@ -244,11 +245,10 @@ require_once 'assets/app/db.php';
                                     <div class="todays-news-list">
                                         <?php while ($news = mysqli_fetch_assoc($today_result)): ?>
                                             <article class="todays-card"
-                                                onclick="window.location.href='news.php?id=<?= $news['id'] ?>'"
+                                                onclick="window.location.href='/news/<?= $news['id'] ?>'"
                                                 style="cursor: pointer;">
                                                 <div class="todays-image">
                                                     <?php
-                                                    // Проверяем существует ли файл картинки
                                                     $image_path = $news['image'] ?? '';
                                                     $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
                                                     $display_image = $image_exists ? $image_path : '/assets/Media/Photo/Заглушка.jpg';
@@ -288,7 +288,7 @@ require_once 'assets/app/db.php';
                                                     </div>
 
                                                     <div class="todays-actions">
-                                                        <a href="news.php?id=<?= $news['id'] ?>" class="read-more"
+                                                        <a href="/news/<?= $news['id'] ?>" class="read-more"
                                                             onclick="event.stopPropagation()">Читать далее</a>
                                                         <div class="todays-stats">
                                                             <button
@@ -322,8 +322,11 @@ require_once 'assets/app/db.php';
                             </div>
                         </div>
                     </div>
+                    <!-- /новости дня -->
                 </div>
+                <!-- /центральный контент -->
 
+                <!-- правый слайдер -->
                 <div class="right-sidebar">
                     <div class="game-marquee">
                         <h3>Популярные игры</h3>
@@ -358,10 +361,12 @@ require_once 'assets/app/db.php';
                         <button class="marquee-btn down-btn" aria-label="Прокрутить вниз">▼</button>
                     </div>
                 </div>
+                <!-- /правый слайдер -->
             </div>
         </div>
     </main>
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -393,6 +398,7 @@ require_once 'assets/app/db.php';
             </div>
         </div>
     </footer>
+    <!-- /футер -->
 </body>
 
 </html>

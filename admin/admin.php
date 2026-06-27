@@ -39,49 +39,39 @@ $stats = [
 <body>
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
-    <?php
-    $user_role = null;
-    if (isset($_SESSION['user_id'])) {
-        $role_sql = "SELECT role FROM users WHERE id = ?";
-        $role_stmt = mysqli_prepare($conn, $role_sql);
-        mysqli_stmt_bind_param($role_stmt, "i", $_SESSION['user_id']);
-        mysqli_stmt_execute($role_stmt);
-        $role_res = mysqli_stmt_get_result($role_stmt);
-        $user_role = mysqli_fetch_assoc($role_res)['role'] ?? null;
-    }
-    ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="../index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="../index.php">Главная</a>
-                <a href="..//category/games">Игры</a>
-                <a href="..//category/news">Новости</a>
-                <a href="..//category/articles">Статьи</a>
-                <a href="..//category/videos">Видео</a>
-                <a href="..//category/walkthroughs">Прохождения</a>
-                <a href="..//help">Помощь</a>
+                <a href="/home">Главная</a>
+                <a href="/category/games">Игры</a>
+                <a href="/category/news">Новости</a>
+                <a href="/category/articles">Статьи</a>
+                <a href="/category/videos">Видео</a>
+                <a href="/category/walkthroughs">Прохождения</a>
+                <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
-                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="../create_news.php" class="create-news-btn">
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -101,19 +91,19 @@ $stats = [
                                 $_SESSION['avatar'] = $avatar_row['avatar'];
                             }
                         }
-                        $avatar_path = $_SESSION['avatar'] ?? 'assets/Media/Photo/man.png';
+                        $avatar_path = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
                         if (strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
-                            $avatar_path = '../' . $avatar_path;
+                            $avatar_path = '/' . $avatar_path;
                         }
                         ?>
                         <a href="/profile/<?= htmlspecialchars($_SESSION['user_id']) ?>" class="user-avatar-link">
                             <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Профиль" class="header-avatar"
-                                onerror="this.src='../assets/Media/Photo/man.png'">
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
-                        <a href="..//login">
+                        <a href="/login">
                             <button class="icon-btn" type="button" aria-label="Вход">
-                                <img src="../assets/Media/Photo/man.png" alt="Вход">
+                                <img src="/assets/Media/Photo/man.png" alt="Вход">
                             </button>
                         </a>
                     <?php endif; ?>
@@ -121,11 +111,13 @@ $stats = [
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
         <div class="main-container">
             <div class="content-wrapper">
-                <!-- Боковое меню -->
+                <!-- сайдбар -->
                 <div class="sidebar">
                     <h3><i class="fas fa-shield-alt"></i> Админ панель</h3>
 
@@ -151,7 +143,6 @@ $stats = [
 
                     <a href="?tab=support" class="menu-item <?= $active_tab === 'support' ? 'active' : '' ?>">
                         <i class="fas fa-life-ring"></i> Поддержка
-
                     </a>
 
                     <?php if (in_array($user_role, ['admin', 'moderator'])): ?>
@@ -160,12 +151,13 @@ $stats = [
                         </a>
                     <?php endif; ?>
 
-                    <a href="..//cab" class="menu-item">
+                    <a href="/cab" class="menu-item">
                         <i class="fas fa-arrow-left"></i> Вернуться в кабинет
                     </a>
                 </div>
+                <!-- /сайдбар -->
 
-                <!-- Контент -->
+                <!-- контент -->
                 <div class="content-area">
                     <?php
                     // Подключаем нужную вкладку
@@ -176,11 +168,14 @@ $stats = [
                         echo '<h2>Вкладка не найдена</h2>';
                     }
                     ?>
-
                 </div>
+                <!-- /контент -->
             </div>
         </div>
     </main>
+    <!-- /основной контент -->
+
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -212,8 +207,9 @@ $stats = [
             </div>
         </div>
     </footer>
-    <script src="../assets/js/no-cache.js"></script>
-    <script src="../assets/js/theme.js"></script>
+    <!-- /футер -->
+    <script src="/assets/js/no-cache.js"></script>
+    <script src="/assets/js/theme.js"></script>
 </body>
 
 </html>

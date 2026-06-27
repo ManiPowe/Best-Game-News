@@ -1,8 +1,14 @@
 <?php
 require_once __DIR__ . '/assets/app/router.php';
 
-// Главная
+// Главная - редирект на /home
 Router::add('/', function() {
+    header('Location: /home');
+    exit;
+});
+
+// Главная страница
+Router::add('/home', function() {
     include 'index.php';
 });
 

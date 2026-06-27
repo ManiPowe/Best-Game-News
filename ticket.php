@@ -94,16 +94,17 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
 <body>
     <script src="/assets/js/theme-init.js"></script>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="/index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="/index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -118,13 +119,13 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="/create_news.php" class="create-news-btn">
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -168,8 +169,10 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
 
+    <!-- основной контент -->
     <main class="ticket-main">
         <div class="ticket-container">
             <div class="ticket-header-info">
@@ -220,7 +223,7 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
                 <?php unset($_SESSION['message_error']); ?>
             <?php endif; ?>
 
-            <!-- Переписка -->
+            <!-- переписка -->
             <div class="messages-section">
                 <div class="messages-list">
                     <?php foreach ($messages as $msg):
@@ -257,8 +260,9 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
                     <?php endforeach; ?>
                 </div>
             </div>
+            <!-- /переписка -->
 
-            <!-- Форма ответа -->
+            <!-- форма ответа -->
             <?php if ($ticket['status'] !== 'closed'): ?>
                 <div class="reply-section">
                     <h3><i class="fas fa-reply"></i> Ответить</h3>
@@ -277,9 +281,12 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
                     <p>Это обращение закрыто. Вы не можете отправлять сообщения.</p>
                 </div>
             <?php endif; ?>
+            <!-- /форма ответа -->
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -311,6 +318,7 @@ $user_role = mysqli_fetch_assoc(mysqli_stmt_get_result($role_stmt))['role'] ?? n
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/no-cache.js"></script>
     <script src="/assets/js/theme.js"></script>
 </body>

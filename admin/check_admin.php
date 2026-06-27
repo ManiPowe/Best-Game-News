@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Получаем роль из БД
 $check_sql = "SELECT role FROM users WHERE id = ?";
 $check_stmt = mysqli_prepare($conn, $check_sql);
 mysqli_stmt_bind_param($check_stmt, "i", $_SESSION['user_id']);

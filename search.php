@@ -2,7 +2,7 @@
 session_start();
 require_once 'assets/app/db.php';
 
-// Получаем роль и аватарку для хедера (как в category.php)
+// Получаем роль и аватарку для хедера
 $user_role = null;
 if (isset($_SESSION['user_id'])) {
     $check_role_sql = "SELECT role FROM users WHERE id = ?";
@@ -75,16 +75,17 @@ if ($query !== '') {
 </head>
 
 <body>
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -93,19 +94,19 @@ if ($query !== '') {
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user_role === 'moderator'): ?>
-                    <a href="admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
-                <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="create_news.php" class="create-news-btn">
+                <?php if ($user_role === 'creator' || $user_role === 'moderator' || $user_role === 'admin'): ?>
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -114,9 +115,16 @@ if ($query !== '') {
                 </form>
                 <div class="auth">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php
+                        $header_avatar = $_SESSION['avatar'] ?? '/assets/Media/Photo/man.png';
+                        if (strpos($header_avatar, 'http') !== 0 && strpos($header_avatar, '/') !== 0) {
+                            $header_avatar = '/' . $header_avatar;
+                        }
+                        ?>
                         <a href="/cab" class="user-avatar-link">
-                            <img src="<?= htmlspecialchars($_SESSION['avatar'] ?? 'assets/Media/Photo/man.png') ?>"
-                                alt="Профиль" class="header-avatar">
+                            <img src="<?= htmlspecialchars($header_avatar) ?>"
+                                alt="Профиль" class="header-avatar"
+                                onerror="this.src='/assets/Media/Photo/man.png'">
                         </a>
                     <?php else: ?>
                         <a href="/login">
@@ -129,12 +137,15 @@ if ($query !== '') {
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main class="main-container">
         <div class="content-wrapper">
             <div class="content-area search-page">
 
                 <?php if ($query === ''): ?>
+                    <!-- пустой запрос -->
                     <div class="search-empty">
                         <i class="fas fa-search"></i>
                         <h2>Введите запрос для поиска</h2>
@@ -143,14 +154,14 @@ if ($query !== '') {
                 <?php else: ?>
                     <h1 class="search-title">Результаты поиска: <span>"<?= htmlspecialchars($query) ?>"</span></h1>
 
-                    <!-- Новости -->
+                    <!-- результаты: новости -->
                     <?php if ($results['news'] && mysqli_num_rows($results['news']) > 0): ?>
                         <section class="search-section">
                             <h2><i class="fas fa-newspaper"></i> Новости (<?= mysqli_num_rows($results['news']) ?>)</h2>
                             <div class="news-grid">
                                 <?php while ($news = mysqli_fetch_assoc($results['news'])): ?>
                                     <div class="news-card">
-                                        <a href="news.php?id=<?= $news['id'] ?>" class="news-image-wrap">
+                                        <a href="/news/<?= $news['id'] ?>" class="news-image-wrap">
                                             <?php
                                             $image_path = $news['image'] ?? '';
                                             $image_exists = $image_path && file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $image_path);
@@ -160,7 +171,7 @@ if ($query !== '') {
                                                 alt="<?= htmlspecialchars($news['title']) ?>">
 
                                             <?php if ($news['game_name']): ?>
-                                                <a href="/category/games&game_id=<?= $news['game_id'] ?>&sort=new"
+                                                <a href="/category/games/<?= $news['game_id'] ?>"
                                                     class="game-badge-overlay">
                                                     <?php if ($news['game_icon']): ?>
                                                         <img src="<?= htmlspecialchars($news['game_icon']) ?>" alt="">
@@ -170,12 +181,18 @@ if ($query !== '') {
                                             <?php endif; ?>
                                         </a>
                                         <div class="news-content">
-                                            <h3><a href="news.php?id=<?= $news['id'] ?>"><?= htmlspecialchars($news['title']) ?></a>
+                                            <h3><a href="/news/<?= $news['id'] ?>"><?= htmlspecialchars($news['title']) ?></a>
                                             </h3>
                                             <p class="news-desc"><?= htmlspecialchars(mb_substr($news['content'], 0, 150)) ?>...</p>
                                             <div class="news-footer">
                                                 <div class="news-author">
-                                                    <img src="<?= htmlspecialchars($news['author_avatar']) ?>" alt=""
+                                                    <?php
+                                                    $author_avatar = $news['author_avatar'] ?? '/assets/Media/Photo/man.png';
+                                                    if (strpos($author_avatar, 'http') !== 0 && strpos($author_avatar, '/') !== 0) {
+                                                        $author_avatar = '/' . $author_avatar;
+                                                    }
+                                                    ?>
+                                                    <img src="<?= htmlspecialchars($author_avatar) ?>" alt=""
                                                         class="author-avatar">
                                                     <span><?= htmlspecialchars($news['author_login']) ?></span>
                                                 </div>
@@ -193,15 +210,22 @@ if ($query !== '') {
                             </div>
                         </section>
                     <?php endif; ?>
+                    <!-- /результаты: новости -->
 
-                    <!-- Авторы -->
+                    <!-- результаты: авторы -->
                     <?php if ($results['users'] && mysqli_num_rows($results['users']) > 0): ?>
                         <section class="search-section">
                             <h2><i class="fas fa-users"></i> Авторы (<?= mysqli_num_rows($results['users']) ?>)</h2>
                             <div class="search-results-grid">
                                 <?php while ($user = mysqli_fetch_assoc($results['users'])): ?>
+                                    <?php
+                                    $user_avatar = $user['avatar'] ?? '/assets/Media/Photo/man.png';
+                                    if (strpos($user_avatar, 'http') !== 0 && strpos($user_avatar, '/') !== 0) {
+                                        $user_avatar = '/' . $user_avatar;
+                                    }
+                                    ?>
                                     <a href="/profile/<?= $user['id'] ?>" class="result-card user-card">
-                                        <img src="<?= htmlspecialchars($user['avatar']) ?>"
+                                        <img src="<?= htmlspecialchars($user_avatar) ?>"
                                             alt="<?= htmlspecialchars($user['login']) ?>">
                                         <div class="result-info">
                                             <h4><?= htmlspecialchars($user['login']) ?></h4>
@@ -213,14 +237,15 @@ if ($query !== '') {
                             </div>
                         </section>
                     <?php endif; ?>
+                    <!-- /результаты: авторы -->
 
-                    <!-- Игры -->
+                    <!-- результаты: игры -->
                     <?php if ($results['games'] && mysqli_num_rows($results['games']) > 0): ?>
                         <section class="search-section">
                             <h2><i class="fas fa-gamepad"></i> Игры (<?= mysqli_num_rows($results['games']) ?>)</h2>
                             <div class="search-results-grid">
                                 <?php while ($game = mysqli_fetch_assoc($results['games'])): ?>
-                                    <a href="/category/games&game_id=<?= $game['id'] ?>&sort=new"
+                                    <a href="/category/games?game_id=<?= $game['id'] ?>"
                                         class="result-card game-card">
                                         <?php if ($game['icon']): ?>
                                             <img src="<?= htmlspecialchars($game['icon']) ?>"
@@ -236,8 +261,9 @@ if ($query !== '') {
                             </div>
                         </section>
                     <?php endif; ?>
+                    <!-- /результаты: игры -->
 
-                    <!-- Если ничего не найдено -->
+                    <!-- ничего не найдено -->
                     <?php if (
                         (!$results['news'] || mysqli_num_rows($results['news']) === 0) &&
                         (!$results['users'] || mysqli_num_rows($results['users']) === 0) &&
@@ -249,13 +275,48 @@ if ($query !== '') {
                             <p>Попробуйте изменить запрос или проверить правильность написания</p>
                         </div>
                     <?php endif; ?>
+                    <!-- /ничего не найдено -->
 
                 <?php endif; ?>
 
             </div>
         </div>
     </main>
+    <!-- /основной контент -->
 
+    <!-- футер -->
+    <footer>
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
+                <p>Best Game News</p>
+            </div>
+            <div class="prav">
+                <p>2026 © Все права защищенны Best Game News</p>
+            </div>
+            <div class="social-links">
+                <a href="#" aria-label="ВКонтакте">
+                    <button type="button"><img src="/assets/Media/Photo/vk.png" alt="ВКонтакте"></button>
+                </a>
+                <a href="#" aria-label="Discord">
+                    <button type="button"><img src="/assets/Media/Photo/discord.png" alt="Discord"></button>
+                </a>
+                <a href="#" aria-label="YouTube">
+                    <button type="button"><img src="/assets/Media/Photo/youtube.png" alt="YouTube"></button>
+                </a>
+                <a href="#" aria-label="Telegram">
+                    <button type="button"><img src="/assets/Media/Photo/tellegram.png" alt="Telegram"></button>
+                </a>
+                <a href="#" aria-label="Steam">
+                    <button type="button"><img src="/assets/Media/Photo/steam.png" alt="Steam"></button>
+                </a>
+                <a href="#" aria-label="Twitch">
+                    <button type="button"><img src="/assets/Media/Photo/twitch.png" alt="Twitch"></button>
+                </a>
+            </div>
+        </div>
+    </footer>
+    <!-- /футер -->
     <script src="/assets/js/theme.js" defer></script>
 </body>
 

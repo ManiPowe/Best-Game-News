@@ -3,7 +3,7 @@ session_start();
 require_once 'assets/app/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: index.php");
+    header("Location: /home");
     exit;
 }
 
@@ -101,11 +101,6 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
     <script src="/assets/js/theme-init.js"></script>
     <script src="/assets/js/no-cache.js"></script>
     <?php
-    // Убедись что в самом начале файла есть:
-// session_start();
-// require_once 'assets/app/db.php';
-    
-    // Получаем роль пользователя ОДИН раз
     $user_role = null;
     if (isset($_SESSION['user_id'])) {
         $check_role_sql = "SELECT role FROM users WHERE id = ?";
@@ -117,16 +112,17 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
     }
     ?>
 
+    <!-- хедер -->
     <header>
         <div class="header">
             <div class="logo-wrap">
-                <a class="logo-link" href="../index.php">
+                <a class="logo-link" href="/home">
                     <img src="/assets/Media/Photo/Logo.png" alt="Логотип Best Game News">
                 </a>
                 <div class="logo">Best Game News</div>
             </div>
             <nav class="nav">
-                <a href="../index.php">Главная</a>
+                <a href="/home">Главная</a>
                 <a href="/category/games">Игры</a>
                 <a href="/category/news">Новости</a>
                 <a href="/category/articles">Статьи</a>
@@ -135,19 +131,19 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                 <a href="/help">Помощь</a>
 
                 <?php if ($user_role === 'admin' || $user['role'] === 'moderator' || $user_role === 'moderator'): ?>
-                    <a href="../admin/admin.php" class="admin-link">
+                    <a href="/admin/admin.php" class="admin-link">
                         <i class="fas fa-shield-alt"></i> Админ панель
                     </a>
                 <?php endif; ?>
 
                 <?php if ($user_role === 'creator' || $user['role'] === 'moderator' || $user_role === 'admin'): ?>
-                    <a href="../create_news.php" class="create-news-btn">
+                    <a href="/create" class="create-news-btn">
                         <i class="fas fa-plus"></i> Создать пост
                     </a>
                 <?php endif; ?>
             </nav>
             <div class="search-wrap">
-                <form action="search.php" method="get" class="search-form">
+                <form action="/search" method="get" class="search-form">
                     <input type="search" name="q" class="search-input" placeholder=" Поиск..."
                         value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="search-btn">
@@ -177,235 +173,86 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
             </div>
         </div>
     </header>
+    <!-- /хедер -->
 
+    <!-- основной контент -->
     <main>
-        <main>
-            <div class="profile-container">
-                <?php if ($is_creator): ?>
-                    <div class="profile-layout">
-                        <div class="profile-card">
-                            <div class="profile-header">
-                                <div class="profile-header-left">
-                                    <div class="avatar">
-                                        <?php
-                                        $avatar_path = $user['avatar'] ?? '';
-                                        if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
-                                            $avatar_path = '/' . $avatar_path;
-                                        }
-                                        ?>
-                                        <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png'): ?>
-                                            <i class="fas fa-user"></i>
-                                        <?php else: ?>
-                                            <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
-                                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
-                                                onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <div class="profile-header-center">
-                                    <div class="profile-info">
-                                        <h2>
-                                            <?= htmlspecialchars($user['login']) ?>
-
-                                            <?php if ($user['role'] === 'admin'): ?>
-                                                <span class="role-badge admin-badge" title="Администратор">
-                                                    <i class="fas fa-shield-alt"></i>
-                                                </span>
-                                            <?php elseif ($user['role'] === 'moderator'): ?>
-                                                <span class="role-badge moderator-badge" title="Модератор">
-                                                    <i class="fas fa-user-shield"></i>
-                                                </span>
-                                            <?php elseif ($user['role'] === 'creator'): ?>
-                                                <span class="role-badge creator-badge" title="Создатель контента">
-                                                    <i class="fas fa-star"></i>
-                                                </span>
-                                            <?php endif; ?>
-                                        </h2>
-
-                                        <?php if ($user['role'] === 'creator' || $user['role'] === 'moderator' || $user['role'] === 'admin'): ?>
-                                            <div class="creator-badge">
-                                                <i class="fas fa-star"></i>
-                                                <span>Создатель контента</span>
-                                            </div>
-                                        <?php endif; ?>
-
-                                        <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
-                                        <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
-                                        <p><i class="fas fa-calendar"></i> Участник с
-                                            <?= date('d.m.Y', strtotime($user['created_at'])) ?>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="profile-stats">
-                                    <div class="stat-item">
-                                        <div class="stat-number"><?= (int) $posts_count ?></div>
-                                        <div class="stat-label">Постов</div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="stat-number"><?= (int) $likes_count ?></div>
-                                        <div class="stat-label">Лайков</div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="stat-number"><?= (int) $comments_count ?></div>
-                                        <div class="stat-label">Комментариев</div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="stat-number"><?= (int) $views_count ?></div>
-                                        <div class="stat-label">Просмотров</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <?php if (!empty($user['bio'])): ?>
-                                <div class="profile-bio">
-                                    <h3>О себе</h3>
-                                    <p><?= nl2br(htmlspecialchars($user['bio'])) ?></p>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="posts-section">
-                            <h3>Посты</h3>
-
-                            <?php
-                            $is_author = ($is_logged_in && $_SESSION['user_id'] == $target_user_id);
-
-                            $posts_sql = "SELECT id, title, image, status, created_at 
-                            FROM news 
-                            WHERE author_id = ?";
-
-                            if (!$is_author) {
-                                $posts_sql .= " AND status = 'published'";
-                            }
-
-                            $posts_sql .= " ORDER BY created_at DESC";
-
-                            $posts_stmt = mysqli_prepare($conn, $posts_sql);
-                            mysqli_stmt_bind_param($posts_stmt, "i", $target_user_id);
-                            mysqli_stmt_execute($posts_stmt);
-                            $posts_result = mysqli_stmt_get_result($posts_stmt);
-                            $posts = [];
-                            while ($post = mysqli_fetch_assoc($posts_result)) {
-                                $posts[] = $post;
-                            }
-                            ?>
-
-                            <?php if (!empty($posts)): ?>
-                                <div class="user-posts-list">
-                                    <?php foreach ($posts as $post): ?>
-                                        <div class="user-post-card-wrapper">
-                                            <a href="/news/<?= $post['id'] ?>" class="user-post-card">
-                                                <?php
-                                                $post_image = $post['image'] ?? '';
-                                                if ($post_image && strpos($post_image, 'http') !== 0 && strpos($post_image, '/') !== 0) {
-                                                    $post_image = '/' . $post_image;
-                                                }
-                                                $image_file = $_SERVER['DOCUMENT_ROOT'] . $post_image;
-                                                $image_exists = $post_image && file_exists($image_file);
-                                                $display_image = $image_exists ? $post_image : '/assets/Media/Photo/Заглушка.jpg';
-                                                ?>
-                                                <img src="<?= htmlspecialchars($display_image) ?>"
-                                                    alt="<?= htmlspecialchars($post['title']) ?>" class="post-cover"
-                                                    onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
-
-                                                <div class="post-info">
-                                                    <h4><?= htmlspecialchars($post['title']) ?></h4>
-
-                                                    <?php if ($is_author): ?>
-                                                        <span class="post-status status-<?= $post['status'] ?>">
-                                                            <?php
-                                                            switch ($post['status']) {
-                                                                case 'published':
-                                                                    echo 'Опубликовано';
-                                                                    break;
-                                                                case 'pending':
-                                                                    echo 'На проверке';
-                                                                    break;
-                                                                case 'draft':
-                                                                    echo 'Черновик';
-                                                                    break;
-                                                            }
-                                                            ?>
-                                                        </span>
-                                                    <?php endif; ?>
-
-                                                    <span
-                                                        class="post-date"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
-                                                </div>
-                                            </a>
-
-                                            <?php
-                                            $can_manage_post = $is_author || in_array($user_role, ['admin', 'moderator']);
-                                            ?>
-
-                                            <?php if ($can_manage_post): ?>
-                                                <div class="post-actions">
-                                                    <?php if ($is_author && $post['status'] === 'draft'): ?>
-                                                        <form action="/assets/app/publish_news.php" method="POST" style="display: inline;">
-                                                            <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
-                                                            <button type="submit" class="action-btn publish-btn"
-                                                                title="Отправить на проверку">
-                                                                <i class="fas fa-paper-plane"></i>
-                                                            </button>
-                                                        </form>
-                                                    <?php endif; ?>
-
-                                                    <?php if ($is_author): ?>
-                                                        <!-- ИСПРАВЛЕНО: добавлен абсолютный путь -->
-                                                        <a href="/assets/app/edit_news.php?id=<?= $post['id'] ?>"
-                                                            class="action-btn edit-btn" title="Редактировать">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                    <?php endif; ?>
-
-                                                    <form action="/assets/app/delete_news.php" method="POST" style="display: inline;"
-                                                        onsubmit="return confirm('Удалить эту новость? Это действие нельзя отменить!');">
-                                                        <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
-                                                        <button type="submit" class="action-btn delete-btn" title="Удалить">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php else: ?>
-                                <p class="no-posts">Пользователь ещё не создал ни одного поста.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php else: ?>
+        <div class="profile-container">
+            <?php if ($is_creator): ?>
+                <!-- профиль создателя контента -->
+                <div class="profile-layout">
                     <div class="profile-card">
                         <div class="profile-header">
-                            <div class="avatar">
-                                <?php
-                                $avatar_path = $user['avatar'] ?? '';
-                                if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
-                                    $avatar_path = '/' . $avatar_path;
-                                }
-                                ?>
-                                <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png' || $avatar_path === 'assets/Media/Photo/man.png'): ?>
-                                    <i class="fas fa-user"></i>
-                                <?php else: ?>
-                                    <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
-                                        onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
-                                <?php endif; ?>
+                            <div class="profile-header-left">
+                                <div class="avatar">
+                                    <?php
+                                    $avatar_path = $user['avatar'] ?? '';
+                                    if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
+                                        $avatar_path = '/' . $avatar_path;
+                                    }
+                                    ?>
+                                    <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png'): ?>
+                                        <i class="fas fa-user"></i>
+                                    <?php else: ?>
+                                        <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
+                                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"
+                                            onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <div class="profile-info">
-                                <h2><?= htmlspecialchars($user['login']) ?></h2>
-                                <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
-                                <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
-                                <p><i class="fas fa-calendar"></i> Участник с
-                                    <?= date('d.m.Y', strtotime($user['created_at'])) ?>
-                                </p>
-                                <?php if (!empty($user['bio'])): ?>
-                                    <p class="profile-bio-text"><i class="fas fa-info-circle"></i>
-                                        <?= nl2br(htmlspecialchars($user['bio'])) ?>
+
+                            <div class="profile-header-center">
+                                <div class="profile-info">
+                                    <h2>
+                                        <?= htmlspecialchars($user['login']) ?>
+
+                                        <?php if ($user['role'] === 'admin'): ?>
+                                            <span class="role-badge admin-badge" title="Администратор">
+                                                <i class="fas fa-shield-alt"></i>
+                                            </span>
+                                        <?php elseif ($user['role'] === 'moderator'): ?>
+                                            <span class="role-badge moderator-badge" title="Модератор">
+                                                <i class="fas fa-user-shield"></i>
+                                            </span>
+                                        <?php elseif ($user['role'] === 'creator'): ?>
+                                            <span class="role-badge creator-badge" title="Создатель контента">
+                                                <i class="fas fa-star"></i>
+                                            </span>
+                                        <?php endif; ?>
+                                    </h2>
+
+                                    <?php if ($user['role'] === 'creator' || $user['role'] === 'moderator' || $user['role'] === 'admin'): ?>
+                                        <div class="creator-badge">
+                                            <i class="fas fa-star"></i>
+                                            <span>Создатель контента</span>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
+                                    <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
+                                    <p><i class="fas fa-calendar"></i> Участник с
+                                        <?= date('d.m.Y', strtotime($user['created_at'])) ?>
                                     </p>
-                                <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <div class="stat-number"><?= (int) $posts_count ?></div>
+                                    <div class="stat-label">Постов</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number"><?= (int) $likes_count ?></div>
+                                    <div class="stat-label">Лайков</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number"><?= (int) $comments_count ?></div>
+                                    <div class="stat-label">Комментариев</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number"><?= (int) $views_count ?></div>
+                                    <div class="stat-label">Просмотров</div>
+                                </div>
                             </div>
                         </div>
 
@@ -416,146 +263,300 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
                             </div>
                         <?php endif; ?>
                     </div>
-                <?php endif; ?>
 
-                <?php if ($is_creator): ?>
-                    <div class="reviews-section">
-                        <h3>Отзывы (<?= count($reviews) ?>)</h3>
+                    <!-- посты пользователя -->
+                    <div class="posts-section">
+                        <h3>Посты</h3>
 
-                        <?php if (isset($_SESSION['review_success'])): ?>
-                            <div class="alert alert-success">
-                                <?= htmlspecialchars($_SESSION['review_success']) ?>
-                            </div>
-                            <?php unset($_SESSION['review_success']); ?>
-                        <?php endif; ?>
+                        <?php
+                        $is_author = ($is_logged_in && $_SESSION['user_id'] == $target_user_id);
 
-                        <?php if (isset($_SESSION['review_error'])): ?>
-                            <div class="alert alert-error">
-                                <?= $_SESSION['review_error'] ?>
-                            </div>
-                            <?php unset($_SESSION['review_error']); ?>
-                        <?php endif; ?>
+                        $posts_sql = "SELECT id, title, image, status, created_at 
+                        FROM news 
+                        WHERE author_id = ?";
 
-                        <?php if ($is_logged_in && !$is_own_profile && !$has_reviewed): ?>
-                            <form action="assets/app/add_review.php" method="POST" class="review-form">
-                                <input type="hidden" name="target_user_id" value="<?= $user['id'] ?>">
-                                <textarea name="review_text" placeholder="Напишите ваш отзыв о создателе..." required
-                                    maxlength="1000"></textarea>
-                                <button type="submit" class="submit-review-btn">
-                                    <i class="fas fa-paper-plane"></i> Отправить отзыв
-                                </button>
-                            </form>
-                        <?php elseif (!$is_logged_in): ?>
-                            <div class="auth-prompt">
-                                <p>Хотите оставить отзыв? <a href="/login">Войдите</a> или <a href="/reg">зарегистрируйтесь</a>!
-                                </p>
-                            </div>
-                        <?php elseif ($is_own_profile): ?>
-                            <p class="self-note">Вы не можете оставлять отзывы самому себе.</p>
-                        <?php elseif ($has_reviewed): ?>
-                            <p class="already-reviewed">Вы уже оставляли отзыв этому пользователю.</p>
-                        <?php endif; ?>
+                        if (!$is_author) {
+                            $posts_sql .= " AND status = 'published'";
+                        }
 
-                        <?php if (!empty($reviews)): ?>
-                            <div class="reviews-list">
-                                <?php foreach ($reviews as $review): ?>
-                                    <div class="review-card">
-                                        <div class="review-header">
+                        $posts_sql .= " ORDER BY created_at DESC";
+
+                        $posts_stmt = mysqli_prepare($conn, $posts_sql);
+                        mysqli_stmt_bind_param($posts_stmt, "i", $target_user_id);
+                        mysqli_stmt_execute($posts_stmt);
+                        $posts_result = mysqli_stmt_get_result($posts_stmt);
+                        $posts = [];
+                        while ($post = mysqli_fetch_assoc($posts_result)) {
+                            $posts[] = $post;
+                        }
+                        ?>
+
+                        <?php if (!empty($posts)): ?>
+                            <div class="user-posts-list">
+                                <?php foreach ($posts as $post): ?>
+                                    <div class="user-post-card-wrapper">
+                                        <a href="/news/<?= $post['id'] ?>" class="user-post-card">
                                             <?php
-                                            $review_avatar = $review['author_avatar'] ?? '/assets/Media/Photo/man.png';
-                                            if (strpos($review_avatar, 'http') !== 0 && strpos($review_avatar, '/') !== 0) {
-                                                $review_avatar = '/' . $review_avatar;
+                                            $post_image = $post['image'] ?? '';
+                                            if ($post_image && strpos($post_image, 'http') !== 0 && strpos($post_image, '/') !== 0) {
+                                                $post_image = '/' . $post_image;
                                             }
+                                            $image_file = $_SERVER['DOCUMENT_ROOT'] . $post_image;
+                                            $image_exists = $post_image && file_exists($image_file);
+                                            $display_image = $image_exists ? $post_image : '/assets/Media/Photo/Заглушка.jpg';
                                             ?>
-                                            <img src="<?= htmlspecialchars($review_avatar) ?>" alt="Аватар" class="review-avatar"
-                                                onerror="this.src='/assets/Media/Photo/man.png'">
-                                            <div class="review-author">
-                                                <a href="/profile/<?= $review['author_id'] ?>" class="review-author-name">
-                                                    <?= htmlspecialchars($review['author_login']) ?>
-                                                </a>
+                                            <img src="<?= htmlspecialchars($display_image) ?>"
+                                                alt="<?= htmlspecialchars($post['title']) ?>" class="post-cover"
+                                                onerror="this.src='/assets/Media/Photo/Заглушка.jpg'">
+
+                                            <div class="post-info">
+                                                <h4><?= htmlspecialchars($post['title']) ?></h4>
+
+                                                <?php if ($is_author): ?>
+                                                    <span class="post-status status-<?= $post['status'] ?>">
+                                                        <?php
+                                                        switch ($post['status']) {
+                                                            case 'published':
+                                                                echo 'Опубликовано';
+                                                                break;
+                                                            case 'pending':
+                                                                echo 'На проверке';
+                                                                break;
+                                                            case 'draft':
+                                                                echo 'Черновик';
+                                                                break;
+                                                        }
+                                                        ?>
+                                                    </span>
+                                                <?php endif; ?>
+
                                                 <span
-                                                    class="review-date"><?= date('d.m.Y H:i', strtotime($review['created_at'])) ?></span>
+                                                    class="post-date"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
                                             </div>
-                                        </div>
-                                        <div class="review-text">
-                                            <?= nl2br(htmlspecialchars($review['text'])) ?>
-                                        </div>
+                                        </a>
+
+                                        <?php
+                                        $can_manage_post = $is_author || in_array($user_role, ['admin', 'moderator']);
+                                        ?>
+
+                                        <?php if ($can_manage_post): ?>
+                                            <div class="post-actions">
+                                                <?php if ($is_author && $post['status'] === 'draft'): ?>
+                                                    <form action="/assets/app/publish_news.php" method="POST" style="display: inline;">
+                                                        <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
+                                                        <button type="submit" class="action-btn publish-btn"
+                                                            title="Отправить на проверку">
+                                                            <i class="fas fa-paper-plane"></i>
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+
+                                                <?php if ($is_author): ?>
+                                                    <a href="/edit/<?= $post['id'] ?>"
+                                                        class="action-btn edit-btn" title="Редактировать">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                <?php endif; ?>
+
+                                                <form action="/assets/app/delete_news.php" method="POST" style="display: inline;"
+                                                    onsubmit="return confirm('Удалить эту новость? Это действие нельзя отменить!');">
+                                                    <input type="hidden" name="news_id" value="<?= $post['id'] ?>">
+                                                    <button type="submit" class="action-btn delete-btn" title="Удалить">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                            <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
+                            <p class="no-posts">Пользователь ещё не создал ни одного поста.</p>
                         <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                    <!-- /посты пользователя -->
+                </div>
+            <?php else: ?>
+                <!-- профиль обычного пользователя -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="avatar">
+                            <?php
+                            $avatar_path = $user['avatar'] ?? '';
+                            if ($avatar_path && strpos($avatar_path, 'http') !== 0 && strpos($avatar_path, '/') !== 0) {
+                                $avatar_path = '/' . $avatar_path;
+                            }
+                            ?>
+                            <?php if (empty($avatar_path) || $avatar_path === '/assets/Media/Photo/man.png' || $avatar_path === 'assets/Media/Photo/man.png'): ?>
+                                <i class="fas fa-user"></i>
+                            <?php else: ?>
+                                <img src="<?= htmlspecialchars($avatar_path) ?>" alt="Аватар"
+                                    onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\'></i>'">
+                            <?php endif; ?>
+                        </div>
+                        <div class="profile-info">
+                            <h2><?= htmlspecialchars($user['login']) ?></h2>
+                            <p><i class="fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?></p>
+                            <p><i class="fas fa-phone"></i> <?= htmlspecialchars($user['phone']) ?></p>
+                            <p><i class="fas fa-calendar"></i> Участник с
+                                <?= date('d.m.Y', strtotime($user['created_at'])) ?>
+                            </p>
+                            <?php if (!empty($user['bio'])): ?>
+                                <p class="profile-bio-text"><i class="fas fa-info-circle"></i>
+                                    <?= nl2br(htmlspecialchars($user['bio'])) ?>
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
 
-                <div class="user-comments-section">
-                    <h3>Последние комментарии</h3>
-                    <?php
-                    $sql_comments = "SELECT c.*, n.title as news_title, n.id as news_id 
-                                FROM comments c 
-                                JOIN news n ON c.news_id = n.id 
-                                WHERE c.user_id = ? 
-                                ORDER BY c.created_at DESC 
-                                LIMIT 10";
-                    $stmt_comments = mysqli_prepare($conn, $sql_comments);
-                    mysqli_stmt_bind_param($stmt_comments, "i", $user['id']);
-                    mysqli_stmt_execute($stmt_comments);
-                    $result_comments = mysqli_stmt_get_result($stmt_comments);
-                    $comments = [];
-                    while ($comment = mysqli_fetch_assoc($result_comments)) {
-                        $comments[] = $comment;
-                    }
-                    ?>
+                    <?php if (!empty($user['bio'])): ?>
+                        <div class="profile-bio">
+                            <h3>О себе</h3>
+                            <p><?= nl2br(htmlspecialchars($user['bio'])) ?></p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
-                    <?php if (!empty($comments)): ?>
-                        <div class="user-comments-list">
-                            <?php foreach ($comments as $comment):
-                                // Проверяем, лайкал ли текущий пользователь
-                                $is_comment_liked = false;
-                                if ($is_logged_in) {
-                                    $is_comment_liked = false;
-                                    if ($is_logged_in) {
-                                        $comment_like_check = mysqli_prepare($conn, "SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?");
-                                        if ($comment_like_check) {
-                                            mysqli_stmt_bind_param($comment_like_check, "ii", $_SESSION['user_id'], $comment['id']);
-                                            mysqli_stmt_execute($comment_like_check);
-                                            mysqli_stmt_store_result($comment_like_check); // ← ДОБАВЛЕНО!
-                                            $is_comment_liked = mysqli_stmt_num_rows($comment_like_check) > 0;
-                                            mysqli_stmt_close($comment_like_check);
+            <!-- отзывы -->
+            <?php if ($is_creator): ?>
+                <div class="reviews-section">
+                    <h3>Отзывы (<?= count($reviews) ?>)</h3>
+
+                    <?php if (isset($_SESSION['review_success'])): ?>
+                        <div class="alert alert-success">
+                            <?= htmlspecialchars($_SESSION['review_success']) ?>
+                        </div>
+                        <?php unset($_SESSION['review_success']); ?>
+                    <?php endif; ?>
+
+                    <?php if (isset($_SESSION['review_error'])): ?>
+                        <div class="alert alert-error">
+                            <?= $_SESSION['review_error'] ?>
+                        </div>
+                        <?php unset($_SESSION['review_error']); ?>
+                    <?php endif; ?>
+
+                    <?php if ($is_logged_in && !$is_own_profile && !$has_reviewed): ?>
+                        <form action="/assets/app/add_review.php" method="POST" class="review-form">
+                            <input type="hidden" name="target_user_id" value="<?= $user['id'] ?>">
+                            <textarea name="review_text" placeholder="Напишите ваш отзыв о создателе..." required
+                                maxlength="1000"></textarea>
+                            <button type="submit" class="submit-review-btn">
+                                <i class="fas fa-paper-plane"></i> Отправить отзыв
+                            </button>
+                        </form>
+                    <?php elseif (!$is_logged_in): ?>
+                        <div class="auth-prompt">
+                            <p>Хотите оставить отзыв? <a href="/login">Войдите</a> или <a href="/reg">зарегистрируйтесь</a>!
+                            </p>
+                        </div>
+                    <?php elseif ($is_own_profile): ?>
+                        <p class="self-note">Вы не можете оставлять отзывы самому себе.</p>
+                    <?php elseif ($has_reviewed): ?>
+                        <p class="already-reviewed">Вы уже оставляли отзыв этому пользователю.</p>
+                    <?php endif; ?>
+
+                    <?php if (!empty($reviews)): ?>
+                        <div class="reviews-list">
+                            <?php foreach ($reviews as $review): ?>
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <?php
+                                        $review_avatar = $review['author_avatar'] ?? '/assets/Media/Photo/man.png';
+                                        if (strpos($review_avatar, 'http') !== 0 && strpos($review_avatar, '/') !== 0) {
+                                            $review_avatar = '/' . $review_avatar;
                                         }
-                                    }
-                                }
-                                ?>
-                                <div class="user-comment-card">
-                                    <div class="comment-header">
-                                        <a href="news.php?id=<?= $comment['news_id'] ?>" class="comment-news-link">
-                                            <i class="fas fa-newspaper"></i> <?= htmlspecialchars($comment['news_title']) ?>
-                                        </a>
-                                        <span
-                                            class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></span>
+                                        ?>
+                                        <img src="<?= htmlspecialchars($review_avatar) ?>" alt="Аватар" class="review-avatar"
+                                            onerror="this.src='/assets/Media/Photo/man.png'">
+                                        <div class="review-author">
+                                            <a href="/profile/<?= $review['author_id'] ?>" class="review-author-name">
+                                                <?= htmlspecialchars($review['author_login']) ?>
+                                            </a>
+                                            <span
+                                                class="review-date"><?= date('d.m.Y H:i', strtotime($review['created_at'])) ?></span>
+                                        </div>
                                     </div>
-                                    <div class="comment-text">
-                                        <?= nl2br(htmlspecialchars($comment['text'])) ?>
-                                    </div>
-                                    <div class="comment-actions">
-                                        <button class="comment-like-btn <?= $is_comment_liked ? 'active' : '' ?>"
-                                            data-comment-id="<?= $comment['id'] ?>">
-                                            <i class="fas fa-heart"></i>
-                                            <span class="comment-like-count"><?= $comment['likes_count'] ?? 0 ?></span>
-                                        </button>
+                                    <div class="review-text">
+                                        <?= nl2br(htmlspecialchars($review['text'])) ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="no-activity">Пользователь пока не оставлял комментариев.</p>
+                        <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
                     <?php endif; ?>
                 </div>
-            </div>
-        </main>
-    </main>
+            <?php endif; ?>
+            <!-- /отзывы -->
 
+            <!-- последние комментарии -->
+            <div class="user-comments-section">
+                <h3>Последние комментарии</h3>
+                <?php
+                $sql_comments = "SELECT c.*, n.title as news_title, n.id as news_id 
+                            FROM comments c 
+                            JOIN news n ON c.news_id = n.id 
+                            WHERE c.user_id = ? 
+                            ORDER BY c.created_at DESC 
+                            LIMIT 10";
+                $stmt_comments = mysqli_prepare($conn, $sql_comments);
+                mysqli_stmt_bind_param($stmt_comments, "i", $user['id']);
+                mysqli_stmt_execute($stmt_comments);
+                $result_comments = mysqli_stmt_get_result($stmt_comments);
+                $comments = [];
+                while ($comment = mysqli_fetch_assoc($result_comments)) {
+                    $comments[] = $comment;
+                }
+                ?>
+
+                <?php if (!empty($comments)): ?>
+                    <div class="user-comments-list">
+                        <?php foreach ($comments as $comment):
+                            $is_comment_liked = false;
+                            if ($is_logged_in) {
+                                $comment_like_check = mysqli_prepare($conn, "SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?");
+                                if ($comment_like_check) {
+                                    mysqli_stmt_bind_param($comment_like_check, "ii", $_SESSION['user_id'], $comment['id']);
+                                    mysqli_stmt_execute($comment_like_check);
+                                    mysqli_stmt_store_result($comment_like_check);
+                                    $is_comment_liked = mysqli_stmt_num_rows($comment_like_check) > 0;
+                                    mysqli_stmt_close($comment_like_check);
+                                }
+                            }
+                            ?>
+                            <div class="user-comment-card">
+                                <div class="comment-header">
+                                    <a href="/news/<?= $comment['news_id'] ?>" class="comment-news-link">
+                                        <i class="fas fa-newspaper"></i> <?= htmlspecialchars($comment['news_title']) ?>
+                                    </a>
+                                    <span
+                                        class="comment-date"><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></span>
+                                </div>
+                                <div class="comment-text">
+                                    <?= nl2br(htmlspecialchars($comment['text'])) ?>
+                                </div>
+                                <div class="comment-actions">
+                                    <button class="comment-like-btn <?= $is_comment_liked ? 'active' : '' ?>"
+                                        data-comment-id="<?= $comment['id'] ?>">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="comment-like-count"><?= $comment['likes_count'] ?? 0 ?></span>
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="no-activity">Пользователь пока не оставлял комментариев.</p>
+                <?php endif; ?>
+            </div>
+            <!-- /последние комментарии -->
+        </div>
+    </main>
+    <!-- /основной контент -->
+
+    <!-- футер -->
     <footer>
         <div class="footer">
             <div class="footer-logo">
@@ -587,6 +588,7 @@ $views_count = $views_result ? (mysqli_fetch_assoc($views_result)['count'] ?? 0)
             </div>
         </div>
     </footer>
+    <!-- /футер -->
     <script src="/assets/js/theme.js" defer></script>
     <script src="/assets/js/profile.js" defer></script>
 </body>
